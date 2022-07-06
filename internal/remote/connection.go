@@ -28,7 +28,7 @@ func (c *Connection) clientConfig() (*ssh.ClientConfig, error) {
 		home, err := os.UserHomeDir()
 
 		if err != nil {
-			return nil, fmt.Errorf("cannot find home directory in ssh key search: %v", err)
+			return nil, fmt.Errorf("cannot find home directory in ssh key search: %w", err)
 		}
 
 		sshKey = home + "/" + c.config.IdentityFile[2:]
@@ -38,12 +38,12 @@ func (c *Connection) clientConfig() (*ssh.ClientConfig, error) {
 
 	key, err := ioutil.ReadFile(sshKey)
 	if err != nil {
-		return nil, fmt.Errorf("unable to read private key: %v", err)
+		return nil, fmt.Errorf("unable to read private key: %w", err)
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse private key: %v", err)
+		return nil, fmt.Errorf("unable to parse private key: %w", err)
 	}
 
 	return &ssh.ClientConfig{
@@ -60,19 +60,19 @@ func (c *Connection) Cmd(cmd string) error {
 	config, err := c.clientConfig()
 
 	if err != nil {
-		return fmt.Errorf("could not create ssh client config: %v", err)
+		return fmt.Errorf("could not create ssh client config: %w", err)
 	}
 
 	hostSocket := fmt.Sprintf("%s:%d", c.config.Hostname, c.config.Port)
 	conn, err := ssh.Dial("tcp", hostSocket, config)
 	if err != nil {
-		return fmt.Errorf("cannot connect %v: %v", hostSocket, err)
+		return fmt.Errorf("cannot connect %v: %w", hostSocket, err)
 	}
 	defer conn.Close()
 
 	session, err := conn.NewSession()
 	if err != nil {
-		return fmt.Errorf("cannot open new session: %v", err)
+		return fmt.Errorf("cannot open new session: %w", err)
 	}
 	defer session.Close()
 
@@ -92,19 +92,19 @@ func (c *Connection) SSH(ctx context.Context) error {
 	config, err := c.clientConfig()
 
 	if err != nil {
-		return fmt.Errorf("could not create ssh client config: %v", err)
+		return fmt.Errorf("could not create ssh client config: %w", err)
 	}
 
 	hostSocket := fmt.Sprintf("%s:%d", c.config.Hostname, c.config.Port)
 	conn, err := ssh.Dial("tcp", hostSocket, config)
 	if err != nil {
-		return fmt.Errorf("cannot connect %v: %v", hostSocket, err)
+		return fmt.Errorf("cannot connect to %v: %w", hostSocket, err)
 	}
 	defer conn.Close()
 
 	session, err := conn.NewSession()
 	if err != nil {
-		return fmt.Errorf("cannot open new session: %v", err)
+		return fmt.Errorf("cannot open new session: %w", err)
 	}
 	defer session.Close()
 
@@ -116,13 +116,13 @@ func (c *Connection) SSH(ctx context.Context) error {
 	fd := int(os.Stdin.Fd())
 	state, err := terminal.MakeRaw(fd)
 	if err != nil {
-		return fmt.Errorf("terminal make raw: %s", err)
+		return fmt.Errorf("terminal make raw error: %w", err)
 	}
 	defer terminal.Restore(fd, state)
 
 	w, h, err := terminal.GetSize(fd)
 	if err != nil {
-		return fmt.Errorf("terminal get size: %s", err)
+		return fmt.Errorf("terminal get size error: %w", err)
 	}
 
 	modes := ssh.TerminalModes{
@@ -136,7 +136,7 @@ func (c *Connection) SSH(ctx context.Context) error {
 		term = "xterm-256color"
 	}
 	if err := session.RequestPty(term, h, w, modes); err != nil {
-		return fmt.Errorf("session xterm: %s", err)
+		return fmt.Errorf("session xterm error: %w", err)
 	}
 
 	session.Stdout = os.Stdout
@@ -144,7 +144,7 @@ func (c *Connection) SSH(ctx context.Context) error {
 	session.Stdin = os.Stdin
 
 	if err := session.Shell(); err != nil {
-		return fmt.Errorf("session shell: %s", err)
+		return fmt.Errorf("session shell error: %w", err)
 	}
 
 	if err := session.Wait(); err != nil {
@@ -154,7 +154,7 @@ func (c *Connection) SSH(ctx context.Context) error {
 				return nil
 			}
 		}
-		return fmt.Errorf("ssh: %s", err)
+		return fmt.Errorf("ssh error: %w", err)
 	}
 	return nil
 }

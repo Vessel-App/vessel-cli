@@ -25,15 +25,13 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 		},
 	}
 
-	fmt.Printf("About to run: '%s'\n", proc.String())
-
 	output, err := proc.CombinedOutput()
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return "", fmt.Errorf("mutagen forward error: %s \n %s", exitError.String(), output)
 		} else {
-			return "", fmt.Errorf("unable start mutagen forward: %v", err)
+			return "", fmt.Errorf("unable start mutagen forward: %w", err)
 		}
 	}
 

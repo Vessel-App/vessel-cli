@@ -1,5 +1,5 @@
 ## TODO
-- [ ] Global debug flag
+- [ ] Global debug flag (env var)
     - Print output from mutagen and other exec.Cmd calls
 - [ ] SSH config edits ~/.ssh/config to add an alias?!
     - Prints out helpful message "Add this yourself, or press 'y' for us to do it"

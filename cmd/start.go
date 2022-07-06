@@ -33,8 +33,6 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Gonna try to forward/sync with %s\n", cfg.Remote.Hostname)
-
 	// TODO: SSH with Mutagen may need to edit ~/.ssh/config to add an alias for it to work reliably.
 	//    This is a bit of an issue on Windows
 	//    FOR NOW WE ASSUME `alias: foo` IS PROVIDED IN THE YAML FILE

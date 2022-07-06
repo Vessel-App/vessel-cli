@@ -23,6 +23,7 @@ func Execute() {
 		sshCmd,
 		cmdCmd,
 	}
+
 	rootCmd.AddCommand(commands...)
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)

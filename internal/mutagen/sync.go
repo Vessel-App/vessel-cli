@@ -12,7 +12,7 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 	exe, err := exec.LookPath(process.ExecutableName("mutagen"))
 
 	if err != nil {
-		return "", fmt.Errorf("unable to determine mutagen path: %v", err)
+		return "", fmt.Errorf("unable to determine mutagen path: %w", err)
 	}
 
 	proc := &exec.Cmd{
@@ -29,15 +29,13 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 		},
 	}
 
-	fmt.Printf("About to run: '%s'\n", proc.String())
-
 	output, err := proc.CombinedOutput()
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return "", fmt.Errorf("mutagen sync error: %s \n %s", exitError.String(), output)
 		} else {
-			return "", fmt.Errorf("unable start mutagen sync: %v", err)
+			return "", fmt.Errorf("unable start mutagen sync: %w", err)
 		}
 	}
 
