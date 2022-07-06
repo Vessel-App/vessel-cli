@@ -7,3 +7,5 @@
 - [ ] `vessel stop` command to cleanup / stop mutagen sessions
 - [ ] Starting a session twice results in double sessions (sync + forward)
     - Use labels and --label-selector, although machine-readable output is a coming feature of mutagen
+- [ ] GitHub Actions: Releaser (goreleaser/goreleaser-action@v2)
+- [ ] Download a set version of mutagen for the current OS to embed (~12M)
