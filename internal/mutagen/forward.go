@@ -2,6 +2,7 @@ package mutagen
 
 import (
 	"fmt"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/process"
 	"os/exec"
 )
@@ -24,6 +25,8 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 			localSocket, alias + ":" + remoteSocket,
 		},
 	}
+
+	logger.GetLogger().Debug("forward_command", proc.String())
 
 	output, err := proc.CombinedOutput()
 

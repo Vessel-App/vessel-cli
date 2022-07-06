@@ -20,7 +20,7 @@ func Retrieve(path string) (*EnvironmentConfig, error) {
 	unMarshallErr := yaml.Unmarshal(file, cfg)
 
 	if unMarshallErr != nil {
-		return nil, fmt.Errorf("error unmarshaling %s: %w", path, unMarshallErr)
+		return nil, fmt.Errorf("error parsing yaml file %s: %w", path, unMarshallErr)
 	}
 
 	valid, err := cfg.Valid()

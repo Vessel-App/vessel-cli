@@ -2,6 +2,7 @@ package mutagen
 
 import (
 	"fmt"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/process"
 	"os/exec"
 )
@@ -28,6 +29,8 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 			local_path, alias + ":" + remote_path,
 		},
 	}
+
+	logger.GetLogger().Debug("sync_command", proc.String())
 
 	output, err := proc.CombinedOutput()
 
