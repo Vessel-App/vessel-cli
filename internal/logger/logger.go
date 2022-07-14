@@ -1,9 +1,13 @@
 package logger
 
 import (
+	"fmt"
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
+	"github.com/vessel-app/vessel-cli/internal/util"
+	"io"
 	"os"
+	"path/filepath"
 )
 
 // Create interface for logging
@@ -17,36 +21,65 @@ type Logs interface {
 	Info(v ...interface{})
 	Warn(v ...interface{})
 	Error(v ...interface{})
+	Close() error
 }
 
 var logger Logs
 
+type LogWriterCLoser interface {
+	io.Writer
+	io.Closer
+}
+
 func GetLogger() Logs {
 	if logger == nil {
 		lvl := os.Getenv("LOG_LEVEL")
+
 		if lvl == "" {
 			lvl = "warn"
 		}
 
-		// todo: Make log level an option in vessel.yml
-		// todo: Use a file writer to write to $HOME/.vessel/debug.log
-		w := log.NewSyncWriter(os.Stderr)
+		writer, err := logWriter()
+
+		if err != nil {
+			writer = os.Stderr
+		}
+
+		w := log.NewSyncWriter(writer)
 		kitLogger := log.NewLogfmtLogger(w)
 		kitLogger = level.NewFilter(kitLogger, level.Allow(level.ParseDefault(lvl, level.DebugValue())))
-		kitLogger = log.With(kitLogger, "caller", log.DefaultCaller)
+		kitLogger = log.With(kitLogger, "ts", log.DefaultTimestampUTC)
 
 		logger = &Logger{
-			Level: lvl,
-			Base:  kitLogger,
+			Level:  lvl,
+			Base:   kitLogger,
+			Writer: writer,
 		}
 	}
 
 	return logger
 }
 
+func logWriter() (LogWriterCLoser, error) {
+	storagePath, err := util.MakeStorageDir()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not create storage directory: %w", err)
+	}
+
+	file, err := os.OpenFile(filepath.FromSlash(storagePath+"/debug.log"), os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0755)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not open ~/.vessel/debug.log for writing: %w", err)
+	}
+
+	return file, nil
+}
+
 type Logger struct {
-	Level string
-	Base  log.Logger
+	Level  string
+	Base   log.Logger
+	Writer LogWriterCLoser
 }
 
 func (l *Logger) Info(v ...interface{}) {
@@ -63,4 +96,8 @@ func (l *Logger) Error(v ...interface{}) {
 
 func (l *Logger) Debug(v ...interface{}) {
 	level.Debug(l.Base).Log(v...)
+}
+
+func (l *Logger) Close() error {
+	return l.Writer.Close()
 }

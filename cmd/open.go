@@ -5,6 +5,7 @@ import (
 	"github.com/skratchdot/open-golang/open"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"os"
 	"strings"
 )
@@ -32,11 +33,16 @@ func runOpenCommand(cmd *cobra.Command, args []string) {
 		err := open.Run("http://localhost:" + portCombo[0])
 
 		if err != nil {
+			logger.GetLogger().Error("command", "open", "msg", "could not run open command", "error", err)
+			PrintIfVerbose(Verbose, err, "error opening a browser")
+
 			fmt.Printf("error opening browser: %v", err)
 			os.Exit(1)
 		}
 	} else {
-		fmt.Println("No port forwarding defined, cannot open your browser")
+		logger.GetLogger().Error("command", "open", "msg", "No port forwarding defined, cannot open your browser", "error", err)
+		PrintIfVerbose(Verbose, err, "error opening a browser")
+
 		os.Exit(1)
 	}
 }

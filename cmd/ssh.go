@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/remote"
 	"os"
 	"os/signal"
@@ -24,7 +25,9 @@ func runSSHCommand(cmd *cobra.Command, args []string) {
 	cfg, err := config.Retrieve(ConfigPath)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger().Error("command", "ssh", "msg", "could not read configuration", "error", err)
+		PrintIfVerbose(Verbose, err, "error running SSH")
+
 		os.Exit(1)
 	}
 
@@ -34,7 +37,9 @@ func runSSHCommand(cmd *cobra.Command, args []string) {
 
 	go func() {
 		if err := run(ctx, cfg); err != nil {
-			fmt.Println(err)
+			logger.GetLogger().Error("command", "ssh", "msg", "error running SSH", "error", err)
+			PrintIfVerbose(Verbose, err, "error running SSH")
+
 			os.Exit(1)
 		}
 		cancel()

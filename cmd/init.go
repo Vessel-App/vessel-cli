@@ -6,6 +6,7 @@ import (
 	"github.com/kevinburke/ssh_config"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"io/ioutil"
 	"os"
@@ -41,6 +42,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	appName, err := askAppName.Run()
 
 	if err != nil {
+		// No logging, user likely just bailed out
 		os.Exit(1)
 	}
 
@@ -52,7 +54,9 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	vesselAppDir, err := util.MakeAppDir(appName)
 
 	if err != nil {
-		fmt.Printf("could not create vessel storage directory '%s': %v", vesselAppDir, err)
+		logger.GetLogger().Error("command", "init", "msg", "could not create vessel storage directory", "error", err, "dir", vesselAppDir)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
 		os.Exit(1)
 	}
 
@@ -60,18 +64,25 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	keys, err := util.GenerateSSHKey()
 
 	if err != nil {
-		fmt.Printf("ssh key error: %v", err)
+		logger.GetLogger().Error("command", "init", "msg", "could not generate SSH keys", "error", err)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
 		os.Exit(1)
 	}
 
 	privateKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519")
 	if err = ioutil.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
-		fmt.Printf("could not store generated SSH private key: %v", err)
+		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH private key", "error", err, "file", privateKeyPath)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
 		os.Exit(1)
 	}
 
-	if err = ioutil.WriteFile(filepath.FromSlash(vesselAppDir+"/id_ed25519.pub"), keys.Public, 0644); err != nil {
-		fmt.Printf("could not store generated SSH public key: %v", err)
+	publicKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519.pub")
+	if err = ioutil.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
+		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH public key", "error", err, "file", publicKeyPath)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
 		os.Exit(1)
 	}
 
@@ -79,7 +90,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	// Ask if we can add to ~/.ssh/config (if alias is not present)
 	canAddSSHAlias := promptui.Prompt{
-		Label:     "We need to add a Host entry to your ~/.ssh/config file, is that okay? Using 'N' will output what we would add there instead.",
+		Label:     "Can we add a Host entry to your ~/.ssh/config file ('N' will output to terminal instead)",
 		IsConfirm: true,
 	}
 
@@ -94,19 +105,20 @@ Host vessel-%s
 	_, err = canAddSSHAlias.Run()
 
 	if err != nil {
-		fmt.Println("No problem! Here is what we would have added to ~/.ssh/config")
+		fmt.Println("Here is what we would have added to ~/.ssh/config:")
 		fmt.Println(sshConfig)
 	} else {
 		// Only write if host doesn't exist yet
 		hostAlreadyExists := ssh_config.Get(appName, "HostName")
 		if len(hostAlreadyExists) == 0 {
 			if err = util.WriteToSshConfig(sshConfig); err != nil {
-				fmt.Printf("could not write to SSH config file: %v", err)
+				logger.GetLogger().Error("command", "init", "msg", "could not write to SSH config to ~/.ssh/config", "error", err)
+				PrintIfVerbose(Verbose, err, "error initializing app")
+
 				os.Exit(1)
 			}
 		} else {
-			fmt.Printf("SSH config already contains host %s", appName)
-			os.Exit(1)
+			fmt.Printf("Warning: ~/.ssh/config file already contained Host %s", appName)
 		}
 	}
 
@@ -125,7 +137,9 @@ forwarding:
 `, appName, privateKeyPath, appName)
 
 	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
-		fmt.Printf("could not write yaml file to current directory: %v", err)
+		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
 		os.Exit(1)
 	}
 

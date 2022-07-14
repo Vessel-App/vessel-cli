@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/remote"
 	"os"
 	"strings"
@@ -30,14 +30,18 @@ func runCmdCommand(cmd *cobra.Command, args []string) {
 	cfg, err := config.Retrieve(ConfigPath)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger().Error("command", "cmd", "error", err)
+		PrintIfVerbose(Verbose, err, "could not read configuration")
+
 		os.Exit(1)
 	}
 
 	connection := remote.NewConnection(&cfg.Remote)
 
 	if err := connection.Cmd(strings.Join(args, " ")); err != nil {
-		fmt.Println(err)
+		logger.GetLogger().Error("command", "cmd", "error", err)
+		PrintIfVerbose(Verbose, err, "could not run given command")
+
 		os.Exit(1)
 	}
 }

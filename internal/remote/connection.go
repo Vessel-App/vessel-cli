@@ -98,7 +98,7 @@ func (c *Connection) SSH(ctx context.Context) error {
 	hostSocket := fmt.Sprintf("%s:%d", c.config.Hostname, c.config.Port)
 	conn, err := ssh.Dial("tcp", hostSocket, config)
 	if err != nil {
-		return fmt.Errorf("cannot connect to %v: %w", hostSocket, err)
+		return fmt.Errorf("cannot connect to '%v': %w", hostSocket, err)
 	}
 	defer conn.Close()
 
