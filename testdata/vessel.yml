@@ -1,3 +1,4 @@
+name: play-app
 remote:
   hostname: host.example.org
   user: myuser
