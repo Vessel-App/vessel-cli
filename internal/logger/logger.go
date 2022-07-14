@@ -28,6 +28,8 @@ func GetLogger() Logs {
 			lvl = "warn"
 		}
 
+		// todo: Make log level an option in vessel.yml
+		// todo: Use a file writer to write to $HOME/.vessel/debug.log
 		w := log.NewSyncWriter(os.Stderr)
 		kitLogger := log.NewLogfmtLogger(w)
 		kitLogger = level.NewFilter(kitLogger, level.Allow(level.ParseDefault(lvl, level.DebugValue())))

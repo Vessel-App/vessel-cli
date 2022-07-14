@@ -3,6 +3,7 @@ package config
 import "fmt"
 
 type EnvironmentConfig struct {
+	Name       string       `yaml:name`
 	Remote     RemoteConfig `yaml:remote`
 	Forwarding []string     `yaml:forwarding`
 }
@@ -17,6 +18,10 @@ type RemoteConfig struct {
 }
 
 func (c *EnvironmentConfig) Valid() (bool, error) {
+	if len(c.Name) < 1 {
+		return false, fmt.Errorf("no app name defined")
+	}
+
 	if len(c.Forwarding) < 1 {
 		return false, fmt.Errorf("no forwarding ports are defined")
 	}

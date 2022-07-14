@@ -7,7 +7,6 @@ import (
 )
 
 // Reference: https://zetcode.com/golang/yaml/
-
 func Retrieve(path string) (*EnvironmentConfig, error) {
 	file, err := ioutil.ReadFile(path)
 

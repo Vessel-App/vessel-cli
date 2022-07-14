@@ -6,6 +6,9 @@ import (
 	"os"
 )
 
+// ConfigPath is used by many commands to store the path to the vessel.yml file
+var ConfigPath string
+
 // rootCmd is the root/first command. All other commands are "under" this root command.
 // The rootCmd is an alias for the "cmd" subcommand.
 var rootCmd = &cobra.Command{
@@ -19,9 +22,12 @@ var rootCmd = &cobra.Command{
 // Execute registers all other commands. This is called by the main package.
 func Execute() {
 	commands := []*cobra.Command{
+		initCmd,
 		startCmd,
+		stopCmd,
 		sshCmd,
 		cmdCmd,
+		openCmd,
 	}
 
 	rootCmd.AddCommand(commands...)
