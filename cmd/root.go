@@ -34,12 +34,13 @@ var rootCmd = &cobra.Command{
 // Execute registers all other commands. This is called by the main package.
 func Execute() {
 	commands := []*cobra.Command{
+		authCmd,
+		cmdCmd,
 		initCmd,
+		openCmd,
+		sshCmd,
 		startCmd,
 		stopCmd,
-		sshCmd,
-		cmdCmd,
-		openCmd,
 	}
 
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
