@@ -85,7 +85,7 @@ func StopForward(name string) error {
 				Path: exe,
 				Args: []string{
 					exe,
-					"sync", "terminate",
+					"forward", "terminate",
 					session.Name,
 				},
 			}).Run()
