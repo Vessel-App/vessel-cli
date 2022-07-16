@@ -9,3 +9,9 @@
     - Use labels and --label-selector, although machine-readable output is a coming feature of mutagen
 - [ ] GitHub Actions: Releaser (goreleaser/goreleaser-action@v2)
 - [ ] Download a set version of mutagen for the current OS to embed (~12M)
+- [ ] Select (default) environment - php version, node version
+- [ ] Global command to see "status" - what apps have mutagen sessions open?
+
+> This no longer really needs to be Golang as we're not using Mutagen libraries but rather shelling out out to the Mutagen CLI.
+> 
+> But that doesn't seem like a useful refactoring at this point.

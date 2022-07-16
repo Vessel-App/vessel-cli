@@ -18,6 +18,19 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 		return "", fmt.Errorf("unable to determine mutagen path: %v", err)
 	}
 
+	// If a session of the same name exists, return that session identifier
+	sessions, err := findForwardSessions(exe)
+
+	if err != nil {
+		return "", fmt.Errorf("could not list forward sessions: %w", err)
+	}
+
+	for _, session := range sessions {
+		if session.Name == name {
+			return session.Identifier, nil
+		}
+	}
+
 	proc := &exec.Cmd{
 		Path: exe,
 		Args: []string{
@@ -50,6 +63,37 @@ func StopForward(name string) error {
 		return fmt.Errorf("unable to determine mutagen path: %w", err)
 	}
 
+	sessions, err := findForwardSessions(exe)
+
+	if err != nil {
+		return fmt.Errorf("could not list forward sessions: %w", err)
+	}
+
+	// It's theoretically possible to have multiple sessions of the same name
+	// open, so we'll close all that match this app name
+	for _, session := range sessions {
+		if session.Name == name {
+			stopForward := &exec.Cmd{
+				Path: exe,
+				Args: []string{
+					exe,
+					"forward", "terminate",
+					session.Name,
+				},
+			}
+
+			logger.GetLogger().Debug("stop_sync_command", stopForward.String())
+
+			// Ignore errors
+			stopForward.Run()
+		}
+	}
+
+	return nil
+}
+
+// findSessions will find any forward/sync
+func findForwardSessions(exe string) ([]ForwardSession, error) {
 	list := &exec.Cmd{
 		Path: exe,
 		Args: []string{
@@ -59,15 +103,15 @@ func StopForward(name string) error {
 		},
 	}
 
-	logger.GetLogger().Debug("stop_sync_command", list.String())
+	logger.GetLogger().Debug("list_forwards_command", list.String())
 
 	output, err := list.CombinedOutput()
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return fmt.Errorf("mutagen sync error: %s \n %s", exitError.String(), output)
+			return nil, fmt.Errorf("mutagen list forwards error: %s \n %s", exitError.String(), output)
 		} else {
-			return fmt.Errorf("unable to stop mutagen sync: %w", err)
+			return nil, fmt.Errorf("unable to list mutagen forward sessions: %w", err)
 		}
 	}
 
@@ -75,22 +119,8 @@ func StopForward(name string) error {
 	err = json.Unmarshal([]byte(strings.Trim(string(output), "\n\"")), &sessions)
 
 	if err != nil {
-		return fmt.Errorf("could not parse mutagen output: %w", err)
+		return nil, fmt.Errorf("could not parse mutagen output: %w", err)
 	}
 
-	for _, session := range sessions {
-		if session.Name == name {
-			// Run immediately, ignoring errors
-			(&exec.Cmd{
-				Path: exe,
-				Args: []string{
-					exe,
-					"forward", "terminate",
-					session.Name,
-				},
-			}).Run()
-		}
-	}
-
-	return nil
+	return sessions, nil
 }
