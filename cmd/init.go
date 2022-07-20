@@ -7,6 +7,7 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"io/ioutil"
@@ -53,6 +54,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	if err != nil {
 		// No logging, user likely just bailed out
+		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure asking app name", "error", err)
 		os.Exit(1)
 	}
 
@@ -98,6 +100,28 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	// TODO: Send public key back to Vessel API for server creation
 	//       (And wait for the server to come alive?)
+	//       We need to give our app the nearest region
+	selectRegion := promptui.Select{
+		Label: "Which region is closest to you?",
+		Items: fly.Regions,
+		Templates: &promptui.SelectTemplates{
+			Active:   fmt.Sprintf("%s {{ .Code | underline }}{{ `-` | underline }}{{ .Name | underline }}", promptui.IconSelect),
+			Inactive: "  {{ .Code }} - {{ .Name }}",
+			Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Code| faint }}{{ "-" | faint }}{{ .Name | faint }}`, promptui.IconGood),
+		},
+		Size: len(fly.Regions),
+	}
+
+	idx, _, err := selectRegion.Run()
+
+	if err != nil {
+		// User likely bailed out
+		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
+		os.Exit(1)
+	}
+
+	fmt.Sprintf("You selected this region: %s", fly.Regions[idx].Code)
+
 	fmt.Printf("HERE we should call the API with token %s and have it create a machine for team %s.", auth.Token, auth.TeamGuid)
 
 	// Ask if we can add to ~/.ssh/config (if alias is not present)
