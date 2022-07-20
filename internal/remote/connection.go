@@ -3,6 +3,7 @@ package remote
 import (
 	"context"
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"github.com/vessel-app/vessel-cli/internal/config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
@@ -25,7 +26,7 @@ func NewConnection(cfg *config.RemoteConfig) *Connection {
 func (c *Connection) clientConfig() (*ssh.ClientConfig, error) {
 	var sshKey string
 	if strings.HasPrefix(c.config.IdentityFile, "~/") {
-		home, err := os.UserHomeDir()
+		home, err := homedir.Dir()
 
 		if err != nil {
 			return nil, fmt.Errorf("cannot find home directory in ssh key search: %w", err)

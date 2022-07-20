@@ -27,7 +27,7 @@ func init() {
 // runCmdCommand runs the command given within the development environment,
 // streaming the output back to the client
 func runCmdCommand(cmd *cobra.Command, args []string) {
-	cfg, err := config.Retrieve(ConfigPath)
+	cfg, err := config.RetrieveProjectConfig(ConfigPath)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "cmd", "error", err)

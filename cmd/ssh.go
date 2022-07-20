@@ -22,7 +22,7 @@ var sshCmd = &cobra.Command{
 // runSSHCommand starts an interactive SSH session
 // with the remote development environment.
 func runSSHCommand(cmd *cobra.Command, args []string) {
-	cfg, err := config.Retrieve(ConfigPath)
+	cfg, err := config.RetrieveProjectConfig(ConfigPath)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "ssh", "msg", "could not read configuration", "error", err)

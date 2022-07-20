@@ -14,7 +14,7 @@ func TestCanUnmarshallValidYaml(t *testing.T) {
 		log.Println(err)
 	}
 
-	got, err := Retrieve(cwd + "/../../testdata/vessel.yml")
+	got, err := RetrieveProjectConfig(cwd + "/../../testdata/vessel.yml")
 
 	if err != nil {
 		t.Errorf("could not unmarshall configuration file: %v", err)
@@ -62,7 +62,7 @@ func TestInValidYamlIsFoundToNotBeNotValid(t *testing.T) {
 		log.Println(err)
 	}
 
-	_, invalidErr := Retrieve(cwd + "/../../testdata/invalid.yml")
+	_, invalidErr := RetrieveProjectConfig(cwd + "/../../testdata/invalid.yml")
 
 	if invalidErr == nil {
 		t.Error("yaml validity should have returned an error")

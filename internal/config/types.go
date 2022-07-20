@@ -2,10 +2,15 @@ package config
 
 import "fmt"
 
+type AuthConfig struct {
+	Token    string `yaml:"access_token"`
+	TeamGuid string `yaml:"team"`
+}
+
 type EnvironmentConfig struct {
-	Name       string       `yaml:name`
-	Remote     RemoteConfig `yaml:remote`
-	Forwarding []string     `yaml:forwarding`
+	Name       string       `yaml:"name"`
+	Remote     RemoteConfig `yaml:"remote"`
+	Forwarding []string     `yaml:"forwarding"`
 }
 
 type RemoteConfig struct {

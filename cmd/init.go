@@ -6,6 +6,7 @@ import (
 	"github.com/kevinburke/ssh_config"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/vessel-app/vessel-cli/internal/config"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"io/ioutil"
@@ -27,6 +28,15 @@ func init() {
 }
 
 func runInitCommand(cmd *cobra.Command, args []string) {
+	auth, err := config.RetrieveVesselConfig()
+
+	if err != nil {
+		logger.GetLogger().Error("command", "init", "msg", "could not get vessel config", "error", err)
+		PrintIfVerbose(Verbose, err, "init error, please make sure to run `vessel auth` first")
+
+		os.Exit(1)
+	}
+
 	// Get/generate application name
 	dir, err := os.Getwd()
 
@@ -87,6 +97,8 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// TODO: Send public key back to Vessel API for server creation
+	//       (And wait for the server to come alive?)
+	fmt.Printf("HERE we should call the API with token %s and have it create a machine for team %s.", auth.Token, auth.TeamGuid)
 
 	// Ask if we can add to ~/.ssh/config (if alias is not present)
 	canAddSSHAlias := promptui.Prompt{

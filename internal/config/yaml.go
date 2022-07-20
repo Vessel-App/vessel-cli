@@ -2,12 +2,16 @@ package config
 
 import (
 	"fmt"
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v3"
 	"io/ioutil"
+	"path/filepath"
 )
 
 // Reference: https://zetcode.com/golang/yaml/
-func Retrieve(path string) (*EnvironmentConfig, error) {
+
+// RetrieveProjectConfig will find and parse a vessel.yml file for a given project
+func RetrieveProjectConfig(path string) (*EnvironmentConfig, error) {
 	file, err := ioutil.ReadFile(path)
 
 	if err != nil {
@@ -26,6 +30,31 @@ func Retrieve(path string) (*EnvironmentConfig, error) {
 
 	if !valid {
 		return nil, fmt.Errorf("invalid yaml configuration: %w", err)
+	}
+
+	return cfg, nil
+}
+
+func RetrieveVesselConfig() (*AuthConfig, error) {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve vessel config: %w", err)
+	}
+
+	configPath := filepath.ToSlash(home + "/.vessel/config.yml")
+	file, err := ioutil.ReadFile(configPath)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not read yaml file '%s': %w", configPath, err)
+	}
+
+	cfg := &AuthConfig{}
+
+	err = yaml.Unmarshal(file, cfg)
+
+	if err != nil {
+		return nil, fmt.Errorf("error parsing yaml file %s: %w", configPath, err)
 	}
 
 	return cfg, nil

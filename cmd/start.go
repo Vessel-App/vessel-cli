@@ -25,7 +25,7 @@ func init() {
 // runStartCommand starts Mutagen sync and forwarding sessions based on
 // configuration in the vessel.yml file. It allows you to start developing remotely!
 func runStartCommand(cmd *cobra.Command, args []string) {
-	cfg, err := config.Retrieve(ConfigPath)
+	cfg, err := config.RetrieveProjectConfig(ConfigPath)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "start", "msg", "could not read configuration", "error", err)

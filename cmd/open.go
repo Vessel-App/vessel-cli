@@ -18,7 +18,7 @@ var openCmd = &cobra.Command{
 }
 
 func runOpenCommand(cmd *cobra.Command, args []string) {
-	cfg, err := config.Retrieve(ConfigPath)
+	cfg, err := config.RetrieveProjectConfig(ConfigPath)
 
 	if err != nil {
 		fmt.Println(err)
