@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gernest/wow"
+	"github.com/gernest/wow/spin"
 	"github.com/gosimple/slug"
 	"github.com/kevinburke/ssh_config"
 	"github.com/manifoldco/promptui"
@@ -10,6 +12,7 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
+	"github.com/vessel-app/vessel-cli/internal/vessel"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -98,9 +101,6 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// TODO: Send public key back to Vessel API for server creation
-	//       (And wait for the server to come alive?)
-	//       We need to give our app the nearest region
 	selectRegion := promptui.Select{
 		Label: "Which region is closest to you?",
 		Items: fly.Regions,
@@ -120,9 +120,27 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	fmt.Sprintf("You selected this region: %s", fly.Regions[idx].Code)
+	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), fly.Regions[idx].Code, auth.Token)
 
-	fmt.Printf("HERE we should call the API with token %s and have it create a machine for team %s.", auth.Token, auth.TeamGuid)
+	if err != nil {
+		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
+		os.Exit(1)
+	}
+
+	w := wow.New(os.Stdout, spin.Get(spin.Dots), " Environment registered, waiting for it to become available")
+	w.Start()
+
+	e, err := vessel.WaitForEnvironment(auth.TeamGuid, env.Id, auth.Token)
+	if err != nil {
+		logger.GetLogger().Debug("cmd", "init", "msg", "could not get dev environment status", "error", err)
+		PrintIfVerbose(Verbose, err, "error creating dev environment")
+
+		os.Exit(1)
+	}
+
+	w.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Environment ready!")
 
 	// Ask if we can add to ~/.ssh/config (if alias is not present)
 	canAddSSHAlias := promptui.Prompt{
@@ -132,11 +150,11 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	sshConfig := fmt.Sprintf(`
 Host vessel-%s
-    HostName TODO
+    HostName %s
     User vessel
     IdentityFile %s
     IdentitiesOnly yes
-`, appName, privateKeyPath)
+`, appName, e.IpAddress, privateKeyPath)
 
 	_, err = canAddSSHAlias.Run()
 
@@ -161,7 +179,7 @@ Host vessel-%s
 	yaml := fmt.Sprintf(`name: %s
 
 remote:
-  hostname: "TODO: Set this"
+  hostname: %s
   user: vessel
   identityfile: %s
   port: 2222
@@ -170,7 +188,7 @@ remote:
 
 forwarding:
   - 8000:80
-`, appName, privateKeyPath, appName)
+`, e.IpAddress, appName, privateKeyPath, appName)
 
 	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
