@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
+	"github.com/vessel-app/vessel-cli/internal/config"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"github.com/vessel-app/vessel-cli/internal/vessel"
@@ -23,7 +24,6 @@ var AuthToken string
 
 func init() {
 	authCmd.Flags().StringVarP(&AuthToken, "token", "t", "", "Auth token generated at https://vessel.app/user/api-tokens")
-	authCmd.MarkFlagRequired("token")
 }
 
 func runAuthCommand(cmd *cobra.Command, args []string) {
@@ -36,19 +36,34 @@ func runAuthCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	if len(AuthToken) == 0 {
+		// Get access_token from ~/.fly/config.yml
+		flycfg, err := config.RetrieveFlyConfig()
+
+		if err != nil {
+			logger.GetLogger().Error("command", "auth", "message", "could not find fly auth token", "error", err)
+			PrintIfVerbose(Verbose, err, "could not find fly auth token")
+
+			os.Exit(1)
+		}
+
+		AuthToken = flycfg.Token
+	}
+
+	// TODO: Get user & orgs
 	user, err := vessel.GetUser(AuthToken)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "auth", "message", "could not get user from token", "error", err)
-		PrintIfVerbose(Verbose, err, "could not find user from that token")
+		PrintIfVerbose(Verbose, err, "could not find a Fly user from that token")
 
 		os.Exit(1)
 	}
 
-	var selectedTeam vessel.Team
+	var SelectedOrg vessel.Team
 	if len(user.Teams) > 1 {
-		selectTeam := promptui.Select{
-			Label: "Which team should we use?",
+		selectOrg := promptui.Select{
+			Label: "Which organization should we use?",
 			Items: user.Teams,
 			Templates: &promptui.SelectTemplates{
 				Active:   fmt.Sprintf("%s {{ .Name | underline }}", promptui.IconSelect),
@@ -57,22 +72,21 @@ func runAuthCommand(cmd *cobra.Command, args []string) {
 			},
 		}
 
-		idx, _, err := selectTeam.Run()
+		idx, _, err := selectOrg.Run()
 
 		if err != nil {
 			// User likely bailed out
 			os.Exit(1)
 		}
 
-		selectedTeam = user.Teams[idx]
+		SelectedOrg = user.Teams[idx]
 	} else {
-		selectedTeam = user.Teams[0]
+		SelectedOrg = user.Teams[0]
 	}
 
 	yaml := fmt.Sprintf(`access_token: %s
-# Team name: %s
-team: %s
-`, AuthToken, selectedTeam.Name, selectedTeam.Guid)
+org: %s
+`, AuthToken, SelectedOrg)
 
 	configPath := filepath.ToSlash(vesselDir + "/config.yml")
 	if err = ioutil.WriteFile(configPath, []byte(yaml), 0755); err != nil {

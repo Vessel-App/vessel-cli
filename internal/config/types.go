@@ -2,6 +2,10 @@ package config
 
 import "fmt"
 
+type FlyConfig struct {
+	Token string `yaml:"access_token"`
+}
+
 type AuthConfig struct {
 	Token    string `yaml:"access_token"`
 	TeamGuid string `yaml:"team"`

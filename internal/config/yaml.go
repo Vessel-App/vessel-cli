@@ -59,3 +59,28 @@ func RetrieveVesselConfig() (*AuthConfig, error) {
 
 	return cfg, nil
 }
+
+func RetrieveFlyConfig() (*FlyConfig, error) {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve fly config: %w", err)
+	}
+
+	configPath := filepath.ToSlash(home + "/.fly/config.yml")
+	file, err := ioutil.ReadFile(configPath)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not read yaml file '%s': %w", configPath, err)
+	}
+
+	cfg := &FlyConfig{}
+
+	err = yaml.Unmarshal(file, cfg)
+
+	if err != nil {
+		return nil, fmt.Errorf("error parsing yaml file %s: %w", configPath, err)
+	}
+
+	return cfg, nil
+}
