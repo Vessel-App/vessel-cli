@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/vessel-app/vessel-cli/internal/logger"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -55,7 +56,8 @@ func GetUser(token string) (*User, error) {
 	r, err := client.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("http client error")
+		// 500 errors go here
+		return nil, fmt.Errorf("http client error: %w", err)
 	}
 
 	defer r.Body.Close()
@@ -78,7 +80,8 @@ func CreateEnvironment(team, name, publicKey, region, token string) (*Environmen
 	url := fmt.Sprintf("%s/team/%s/environment", vesselApiEndpoint(), team)
 
 	client := &http.Client{
-		Timeout: time.Second * 2,
+		//Timeout: time.Second * 2,
+		Timeout: time.Minute * 5, // For local dev while queue is "sync"
 	}
 
 	environmentRequest := CreateEnvironmentRequest{
@@ -102,12 +105,15 @@ func CreateEnvironment(team, name, publicKey, region, token string) (*Environmen
 	r, err := client.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("http client error")
+		// 500 errors go here
+		return nil, fmt.Errorf("http client error: %w", err)
 	}
 
 	defer r.Body.Close()
 
 	if r.StatusCode > 299 {
+		b, _ := ioutil.ReadAll(r.Body)
+		logger.GetLogger().Debug("caller", "api::CreateEnvironment", "msg", "http request error", "status", r.StatusCode, "body", string(b))
 		return nil, fmt.Errorf("invalid create environment request: %w", err)
 	}
 
@@ -154,7 +160,7 @@ func WaitForEnvironment(team string, machine uint64, token string) (*Environment
 
 // GetEnvironment retrieves a development environment
 func GetEnvironment(team string, machine uint64, token string) (*Environment, error) {
-	url := fmt.Sprintf("%s/team/%s/environment/%s", vesselApiEndpoint(), team, string(machine))
+	url := fmt.Sprintf("%s/team/%s/environment/%d", vesselApiEndpoint(), team, machine)
 
 	client := &http.Client{
 		Timeout: time.Second * 2,
@@ -168,7 +174,8 @@ func GetEnvironment(team string, machine uint64, token string) (*Environment, er
 	r, err := client.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("http client error")
+		// 500 errors go here
+		return nil, fmt.Errorf("http client error: %w", err)
 	}
 
 	defer r.Body.Close()
@@ -194,5 +201,5 @@ func vesselApiEndpoint() string {
 		return endpoint
 	}
 
-	return "http://localhost:8000/api"
+	return "http://localhost:8888/api"
 }

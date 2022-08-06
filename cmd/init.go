@@ -154,6 +154,7 @@ Host vessel-%s
     User vessel
     IdentityFile %s
     IdentitiesOnly yes
+    AddressFamily inet6
 `, appName, e.IpAddress, privateKeyPath)
 
 	_, err = canAddSSHAlias.Run()
@@ -182,13 +183,13 @@ remote:
   hostname: %s
   user: vessel
   identityfile: %s
-  port: 2222
+  port: 22
   path: /home/vessel/app
   alias: vessel-%s
 
 forwarding:
   - 8000:80
-`, e.IpAddress, appName, privateKeyPath, appName)
+`, appName, e.IpAddress, privateKeyPath, appName)
 
 	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)

@@ -8,7 +8,9 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
+	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -64,7 +66,7 @@ func (c *Connection) Cmd(cmd string) error {
 		return fmt.Errorf("could not create ssh client config: %w", err)
 	}
 
-	hostSocket := fmt.Sprintf("%s:%d", c.config.Hostname, c.config.Port)
+	hostSocket := net.JoinHostPort(c.config.Hostname, strconv.Itoa(c.config.Port))
 	conn, err := ssh.Dial("tcp", hostSocket, config)
 	if err != nil {
 		return fmt.Errorf("cannot connect %v: %w", hostSocket, err)
@@ -96,10 +98,10 @@ func (c *Connection) SSH(ctx context.Context) error {
 		return fmt.Errorf("could not create ssh client config: %w", err)
 	}
 
-	hostSocket := fmt.Sprintf("%s:%d", c.config.Hostname, c.config.Port)
+	hostSocket := net.JoinHostPort(c.config.Hostname, strconv.Itoa(c.config.Port))
 	conn, err := ssh.Dial("tcp", hostSocket, config)
 	if err != nil {
-		return fmt.Errorf("cannot connect to '%v': %w", hostSocket, err)
+		return fmt.Errorf("cannot connect to '%s': %w", hostSocket, err)
 	}
 	defer conn.Close()
 

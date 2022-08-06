@@ -17,7 +17,7 @@ type RemoteConfig struct {
 	Hostname     string `yaml:"hostname"`
 	User         string `yaml:"user"`
 	IdentityFile string `yaml:"identityfile"`
-	Port         uint   `yaml:"port"`
+	Port         int    `yaml:"port"`
 	RemotePath   string `yaml:"path"`
 	Alias        string `yaml:alias,omitempty`
 }
