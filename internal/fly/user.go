@@ -2,22 +2,32 @@ package fly
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
 
+type User struct {
+	Email         string        `json:"email"`
+	Organizations Organizations `json:"organizations"`
+}
+
+type Organizations struct {
+	Nodes []Organization `json:"nodes"`
+}
+
+type Organization struct {
+	Id   string `json:"id"`
+	Slug string `json:"slug"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+	Role string `json:"viewerRole"`
+}
+
 type GetUserRequest struct{}
 
 func (r *GetUserRequest) ToRequest(token string) (*http.Request, error) {
-	query := []byte(`
-{
-	"query": "query {
-		currentUser {email}
-		personalOrganization {id slug name type viewerRole}
-		organizations {id slug name type viewerRole}
-	}"
-}
-`)
+	query := []byte(`{"query": "query {currentUser {email} organizations {nodes{id slug name type viewerRole}}}"}`)
 	req, err := http.NewRequest("POST", "https://api.fly.io/graphql", bytes.NewBuffer(query))
 
 	if err != nil {
@@ -25,8 +35,31 @@ func (r *GetUserRequest) ToRequest(token string) (*http.Request, error) {
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
-	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	req.Header.Set("Accept", "application/json")
 
 	return req, nil
+}
+
+func GetUser(token string) (*User, error) {
+	req := &GetUserRequest{}
+
+	responseBody, err := DoRequest(token, req)
+
+	if err != nil {
+		return nil, fmt.Errorf("request error: %w", err)
+	}
+
+	u := &User{}
+	gr := &GraphResponse{
+		Data: u,
+	}
+
+	err = json.Unmarshal(responseBody, gr)
+
+	if err != nil {
+		return nil, fmt.Errorf("could not unmarshall json: %w", err)
+	}
+
+	return u, nil
 }

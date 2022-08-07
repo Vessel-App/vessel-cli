@@ -5,9 +5,9 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"github.com/vessel-app/vessel-cli/internal/vessel"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -50,8 +50,7 @@ func runAuthCommand(cmd *cobra.Command, args []string) {
 		AuthToken = flycfg.Token
 	}
 
-	// TODO: Get user & orgs
-	user, err := vessel.GetUser(AuthToken)
+	user, err := fly.GetUser(AuthToken)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "auth", "message", "could not get user from token", "error", err)
@@ -60,11 +59,11 @@ func runAuthCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	var SelectedOrg vessel.Team
-	if len(user.Teams) > 1 {
+	var SelectedOrg fly.Organization
+	if len(user.Organizations.Nodes) > 1 {
 		selectOrg := promptui.Select{
 			Label: "Which organization should we use?",
-			Items: user.Teams,
+			Items: user.Organizations.Nodes,
 			Templates: &promptui.SelectTemplates{
 				Active:   fmt.Sprintf("%s {{ .Name | underline }}", promptui.IconSelect),
 				Inactive: "  {{ .Name }}",
@@ -79,14 +78,15 @@ func runAuthCommand(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		SelectedOrg = user.Teams[idx]
+		SelectedOrg = user.Organizations.Nodes[idx]
 	} else {
-		SelectedOrg = user.Teams[0]
+		SelectedOrg = user.Organizations.Nodes[0]
 	}
 
 	yaml := fmt.Sprintf(`access_token: %s
+# Org Name: %s
 org: %s
-`, AuthToken, SelectedOrg)
+`, AuthToken, SelectedOrg.Name, SelectedOrg.Slug)
 
 	configPath := filepath.ToSlash(vesselDir + "/config.yml")
 	if err = ioutil.WriteFile(configPath, []byte(yaml), 0755); err != nil {

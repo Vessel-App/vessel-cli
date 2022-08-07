@@ -7,8 +7,8 @@ type FlyConfig struct {
 }
 
 type AuthConfig struct {
-	Token    string `yaml:"access_token"`
-	TeamGuid string `yaml:"team"`
+	Token string `yaml:"access_token"`
+	Org   string `yaml:"org"`
 }
 
 type EnvironmentConfig struct {

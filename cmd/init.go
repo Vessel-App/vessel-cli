@@ -101,6 +101,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// TODO: Get region from graphql endpoint
 	selectRegion := promptui.Select{
 		Label: "Which region is closest to you?",
 		Items: fly.Regions,
@@ -120,6 +121,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// TODO: Do this here...
 	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), fly.Regions[idx].Code, auth.Token)
 
 	if err != nil {
