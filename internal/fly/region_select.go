@@ -6,9 +6,11 @@ import (
 )
 
 type Region struct {
-	Code, Name   string
-	Location     haversine.Coord
-	UserDistance float64
+	Code             string `json:"code"`
+	Name             string `json:"name"`
+	GatewayAvailable bool   `json:"gatewayAvailable"`
+	Location         haversine.Coord
+	UserDistance     float64
 }
 
 // Distance calculates the distance between region and a given point

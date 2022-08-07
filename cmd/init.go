@@ -63,7 +63,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	appName = slug.Make(appName)
 
-	// TODO: If this app exists, ask if we should over-write stuff
+	// TODO: If this app exists, ask if we should over-write ~/.vessel/<app-name> files
 
 	// Create ~/.vessel/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
@@ -101,28 +101,39 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// TODO: Get region from graphql endpoint
-	selectRegion := promptui.Select{
-		Label: "Which region is closest to you?",
-		Items: fly.Regions,
-		Templates: &promptui.SelectTemplates{
-			Active:   fmt.Sprintf("%s {{ .Code | underline }}{{ `-` | underline }}{{ .Name | underline }}", promptui.IconSelect),
-			Inactive: "  {{ .Code }} - {{ .Name }}",
-			Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Code| faint }}{{ "-" | faint }}{{ .Name | faint }}`, promptui.IconGood),
-		},
-		Size: len(fly.Regions),
-	}
-
-	idx, _, err := selectRegion.Run()
+	var nearestRegionCode string
+	region, err := fly.GetNearestRegion(auth.Token)
 
 	if err != nil {
-		// User likely bailed out
-		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
-		os.Exit(1)
+		logger.GetLogger().Debug("cmd", "init", "msg", "could not automatically find nearest region", "error", err)
+
+		// If we can't get the nearest region, have them select a region
+		selectRegion := promptui.Select{
+			Label: "Which region is closest to you?",
+			Items: fly.Regions,
+			Templates: &promptui.SelectTemplates{
+				Active:   fmt.Sprintf("%s {{ .Code | underline }}{{ `-` | underline }}{{ .Name | underline }}", promptui.IconSelect),
+				Inactive: "  {{ .Code }} - {{ .Name }}",
+				Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Code| faint }}{{ "-" | faint }}{{ .Name | faint }}`, promptui.IconGood),
+			},
+			Size: len(fly.Regions),
+		}
+
+		idx, _, err := selectRegion.Run()
+
+		if err != nil {
+			// User likely bailed out
+			logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
+			os.Exit(1)
+		}
+
+		nearestRegionCode = fly.Regions[idx].Code
+	} else {
+		nearestRegionCode = region.NearestRegion.Code
 	}
 
 	// TODO: Do this here...
-	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), fly.Regions[idx].Code, auth.Token)
+	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), nearestRegionCode, auth.Token)
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
