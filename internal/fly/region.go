@@ -16,10 +16,10 @@ type GetNearestRegionRequest struct{}
 func (r *GetNearestRegionRequest) ToRequest(token string) (*http.Request, error) {
 	query := []byte(`{"query": "query { nearestRegion { code name gatewayAvailable } }"}`)
 
-	req, err := http.NewRequest("POST", "https://api.fly.io/graphql", bytes.NewBuffer(query))
+	req, err := http.NewRequest(http.MethodPost, "https://api.fly.io/graphql", bytes.NewBuffer(query))
 
 	if err != nil {
-		return nil, fmt.Errorf("could get create http request object: %w", err)
+		return nil, fmt.Errorf("could not create http request object: %w", err)
 	}
 
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")

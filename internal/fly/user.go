@@ -28,10 +28,10 @@ type GetUserRequest struct{}
 
 func (r *GetUserRequest) ToRequest(token string) (*http.Request, error) {
 	query := []byte(`{"query": "query {currentUser {email} organizations {nodes{id slug name type viewerRole}}}"}`)
-	req, err := http.NewRequest("POST", "https://api.fly.io/graphql", bytes.NewBuffer(query))
+	req, err := http.NewRequest(http.MethodPost, "https://api.fly.io/graphql", bytes.NewBuffer(query))
 
 	if err != nil {
-		return nil, fmt.Errorf("could get create http request object: %w", err)
+		return nil, fmt.Errorf("could not create http request object: %w", err)
 	}
 
 	req.Header.Set("Authorization", "Bearer "+token)
