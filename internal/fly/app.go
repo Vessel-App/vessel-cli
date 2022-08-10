@@ -8,8 +8,9 @@ import (
 )
 
 type App struct {
-	AppName      string        `json:"name"`
-	Organization *Organization `json:"organization"`
+	AppName      string       `json:"name"`
+	Organization Organization `json:"organization"`
+	IpAddresses  IpAddresses  `json:"ipAddresses"`
 }
 
 type CreateAppRequest struct {
@@ -48,7 +49,7 @@ func CreateApp(token, name, org string) (*App, error) {
 
 	return &App{
 		AppName: req.AppName,
-		Organization: &Organization{
+		Organization: Organization{
 			Slug: req.OrgSlug,
 		},
 	}, nil
