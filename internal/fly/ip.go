@@ -8,22 +8,12 @@ import (
 	"strings"
 )
 
+/*****************
+ * ALLOCATE IP
+****************/
+
 type IpAddressAllocationResponse struct {
 	Allocation IpAddressAllocation `json:"allocateIpAddress"`
-}
-
-type IpAddressAllocation struct {
-	IpAddress IpAddress `json:"ipAddress"`
-}
-
-type IpAddresses struct {
-	Nodes []IpAddress `json:"nodes"`
-}
-
-type IpAddress struct {
-	Address string `json:"address"`
-	Type    string `json:"type"`
-	Region  string `json:"region"`
 }
 
 type GetAppIpResponse struct {
@@ -80,6 +70,10 @@ func AllocateIp(token, app string, useV6 bool) (*IpAddressAllocation, error) {
 
 	return &i.Allocation, nil
 }
+
+/*****************
+ * GET APP IP
+****************/
 
 type GetAppIpRequest struct {
 	App string

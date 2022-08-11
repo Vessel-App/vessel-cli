@@ -7,10 +7,6 @@ import (
 	"net/http"
 )
 
-type NearestRegion struct {
-	NearestRegion Region `json:"nearestRegion"`
-}
-
 type GetNearestRegionRequest struct{}
 
 func (r *GetNearestRegionRequest) ToRequest(token string) (*http.Request, error) {

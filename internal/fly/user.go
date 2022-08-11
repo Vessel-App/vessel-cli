@@ -7,23 +7,6 @@ import (
 	"net/http"
 )
 
-type User struct {
-	Email         string        `json:"email"`
-	Organizations Organizations `json:"organizations"`
-}
-
-type Organizations struct {
-	Nodes []Organization `json:"nodes"`
-}
-
-type Organization struct {
-	Id   string `json:"id"`
-	Slug string `json:"slug"`
-	Name string `json:"name"`
-	Type string `json:"type"`
-	Role string `json:"viewerRole"`
-}
-
 type GetUserRequest struct{}
 
 func (r *GetUserRequest) ToRequest(token string) (*http.Request, error) {

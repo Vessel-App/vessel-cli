@@ -7,11 +7,9 @@ import (
 	"net/http"
 )
 
-type App struct {
-	AppName      string       `json:"name"`
-	Organization Organization `json:"organization"`
-	IpAddresses  IpAddresses  `json:"ipAddresses"`
-}
+/*****************
+ * CREATE APP
+****************/
 
 type CreateAppRequest struct {
 	AppName string
@@ -55,6 +53,10 @@ func CreateApp(token, name, org string) (*App, error) {
 	}, nil
 }
 
+/*****************
+ * GET APP
+****************/
+
 type GetAppRequest struct {
 	AppName string
 }
@@ -95,6 +97,10 @@ func GetApp(token, name string) (*App, error) {
 	return a, nil
 }
 
+/*****************
+ * DELETE APP
+****************/
+
 type DeleteAppRequest struct {
 	AppName string
 }
@@ -119,7 +125,7 @@ func DeleteApp(token, name string) error {
 		AppName: name,
 	}
 
-	err := DoDeleteRequest(token, req)
+	_, err := DoRequest(token, req)
 
 	if err != nil {
 		return fmt.Errorf("request error: %w", err)
