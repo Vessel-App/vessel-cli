@@ -1,6 +1,9 @@
 package fly
 
-import "github.com/umahmood/haversine"
+import (
+	"github.com/umahmood/haversine"
+	"golang.org/x/exp/slices"
+)
 
 /*****************
  * APP
@@ -22,6 +25,12 @@ type Machine struct {
 	State  string `json:"state"`
 	Region string `json:"regions"`
 	Image  string `json:"image"`
+}
+
+func (m *Machine) IsInitialized() bool {
+	initValues := []string{"started", "stopped", "stopping"}
+
+	return slices.Contains(initValues, m.State)
 }
 
 /*****************

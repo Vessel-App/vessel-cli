@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 type RunMachineRequest struct {
@@ -253,4 +254,33 @@ func DeleteMachine(token, app, machine string) error {
 	}
 
 	return nil
+}
+
+func WaitForMachine(token, app, machine string) error {
+	// Total wait time ~5 minutes (should only need a minute or 2)
+	ticker := time.NewTicker(2 * time.Second)
+	totalAttempts := 0
+	attemptsAllowed := 150
+
+	for {
+		select {
+		case <-ticker.C:
+			e, err := GetMachine(token, app, machine)
+			if err != nil {
+				ticker.Stop()
+				return fmt.Errorf("could not get machine: %w", err)
+			}
+
+			if e.IsInitialized() {
+				ticker.Stop()
+				return nil
+			}
+
+			totalAttempts++
+			if totalAttempts >= attemptsAllowed {
+				ticker.Stop()
+				return fmt.Errorf("too many get machine attempts")
+			}
+		}
+	}
 }

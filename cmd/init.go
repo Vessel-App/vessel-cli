@@ -9,10 +9,10 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/environments"
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"github.com/vessel-app/vessel-cli/internal/vessel"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -132,8 +132,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		nearestRegionCode = region.NearestRegion.Code
 	}
 
-	// TODO: Do this here...
-	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), nearestRegionCode, auth.Token)
+	env, err := environments.CreateEnvironment(auth.Token, appName, auth.Org, nearestRegionCode, string(keys.Public))
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
@@ -145,7 +144,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	w := wow.New(os.Stdout, spin.Get(spin.Dots), " Environment registered, waiting for it to become available")
 	w.Start()
 
-	e, err := vessel.WaitForEnvironment(auth.TeamGuid, env.Id, auth.Token)
+	err = fly.WaitForMachine(auth.Token, appName, env.FlyMachine)
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not get dev environment status", "error", err)
 		PrintIfVerbose(Verbose, err, "error creating dev environment")
@@ -168,7 +167,7 @@ Host vessel-%s
     IdentityFile %s
     IdentitiesOnly yes
     AddressFamily inet6
-`, appName, e.IpAddress, privateKeyPath)
+`, appName, env.FlyIp, privateKeyPath)
 
 	_, err = canAddSSHAlias.Run()
 
@@ -202,7 +201,7 @@ remote:
 
 forwarding:
   - 8000:80
-`, appName, e.IpAddress, privateKeyPath, appName)
+`, appName, env.FlyIp, privateKeyPath, appName)
 
 	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
