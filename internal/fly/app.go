@@ -17,10 +17,10 @@ type CreateAppRequest struct {
 }
 
 func (r *CreateAppRequest) ToRequest(token string) (*http.Request, error) {
-	data := []byte(fmt.Sprintf(`{"app_name": "%s", "org_slug", "%s"}`, r.AppName, r.OrgSlug))
+	data := []byte(fmt.Sprintf(`{"app_name": "%s", "org_slug": "%s"}`, r.AppName, r.OrgSlug))
 
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, "http://_api.internal:4280", bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, "http://_api.internal:4280/v1/apps", bytes.NewBuffer(data))
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)

@@ -203,7 +203,7 @@ forwarding:
   - 8000:80
 `, appName, env.FlyIp, privateKeyPath, appName)
 
-	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
+	if err = os.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 

@@ -20,10 +20,8 @@ func CreateEnvironment(token, appName, org, region, pubKey string) (*Environment
 		return nil, fmt.Errorf("could not register app: %w", err)
 	}
 
-	// TODO Push to registry (or just use a pre-baked image?)
-
 	// Run Machine (image + env var)
-	machine, err := fly.RunMachine(token, appName, region, "todo:IMAGE", pubKey)
+	machine, err := fly.RunMachine(token, appName, region, "vesselapp/php:8.1", pubKey)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not run machine: %w", err)

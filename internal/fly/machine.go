@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -18,12 +19,14 @@ type RunMachineRequest struct {
 func (m *RunMachineRequest) ToRequest(token string) (*http.Request, error) {
 	env := ""
 	for k, v := range m.Env {
-		env += fmt.Sprintf(`"%s: %s,"`, k, v)
+		env += fmt.Sprintf(`"%s": "%s",`, k, strings.Trim(v, "\n "))
 	}
-	data := []byte(fmt.Sprintf(`{"region": "%s", "config": {"image": "%s", "env": {%s}}}`, m.Region, m.Image, env))
+	env = strings.TrimRight(env, ",")
+
+	data := []byte(fmt.Sprintf(`{"name": "vessel-php", "region": "%s", "config": {"image": "%s", "env": {%s}, "services": [{"internal_port": 2222, "protocol": "tcp", "ports":[{"port": 22}]}]}}`, m.Region, m.Image, env))
 
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s", m.App), bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines", m.App), bytes.NewBuffer(data))
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -73,7 +76,7 @@ type ListMachinesResponse struct {
 
 func (m *ListMachinesRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s", m.App), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines", m.App), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
