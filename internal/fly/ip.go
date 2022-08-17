@@ -62,7 +62,11 @@ func AllocateIp(token, app string, useV6 bool) (*IpAddressAllocation, error) {
 	}
 
 	i := &IpAddressAllocationResponse{}
-	err = json.Unmarshal(responseBody, i)
+	gr := &GraphResponse{
+		Data: i,
+	}
+
+	err = json.Unmarshal(responseBody, gr)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshall json: %w", err)
@@ -110,7 +114,10 @@ func GetAppIp(token, app string) (*IpAddress, error) {
 	}
 
 	a := &GetAppIpResponse{}
-	err = json.Unmarshal(responseBody, a)
+	gr := &GraphResponse{
+		Data: a,
+	}
+	err = json.Unmarshal(responseBody, gr)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not unmarshall json: %w", err)
