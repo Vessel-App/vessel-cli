@@ -1,19 +1,25 @@
 ## Remote Dev Environments
-Remote dev environments that feel local. Powered by [Fly.io](https://fly.io)
+Remote dev environments that feel local. Powered by [Fly.io](https://fly.io).
+
+<!-- gif showing it off here -->
 
 ## What?
 
-Installing tons of development stuff onto laptop sucks. Let's not.
+Installing tons of development stuff onto laptop sucks. Let's not but say we did.
 
 This project:
 
-1. Creates an app on Fly.io that automatically turns off when you're inactive (not connected)
+1. Creates an app on Fly.io that has your dependencies in it.
 2. Syncs your local code into the app on-the-fly
 3. Forwards defined ports (e.g. open `localhost:8000` in your browser)
 
+> The Fly app turns off automatically when you disconnect from it, so it's not running 24/7.
+>
+> It'll turn back on automatically when you re-connect.
+
 ## Get Started
 
-First, install dependencies:
+1️⃣ First, install dependencies:
 
 1. [Install `flyctl`](https://fly.io/docs/getting-started/installing-flyctl/) and create a Fly account
 2. [Install `mutagen`](https://mutagen.io/documentation/introduction/installation) to sync code / forward ports
@@ -22,13 +28,13 @@ First, install dependencies:
     - Intel Macs should grab the `Darwin AMD64` file
     - Linux desktop users already know what to pick. You poor, wretched sods
 
-Then install `vessel` from the [releases](https://github.com/Vessel-App/vessel-cli/releases) page. (I'll improve this soon).
+2️⃣ Then install `vessel` from the [releases](https://github.com/Vessel-App/vessel-cli/releases) page. (I'll improve this soon).
 
 - M1/M2 Macs should grab the `Darwin ARM64` file
 - Intel Macs should grab the `Darwin AMD64` file
 - Linux desktop users already know what to pick. You poor, wretched sods
 
-Then authenticate.
+3️⃣ Then authenticate.
 
 ```bash
 # If you logged in with `fly auth login`
@@ -38,14 +44,14 @@ vessel auth
 vessel auth -t YOUR_TOKEN_HERE
 ```
 
-Then head to a code base and run initialize your project.
+4️⃣ Then head to a code base and run initialize your project.
 
 ```bash
 cd ~/Code/some-laravel-project
 vessel init
 ```
 
-Once that's finished, run the `start` command to enable file syncing / port forwarding
+🔁 Once that's finished, run the `start` command to enable file syncing / port forwarding
 
 ```bash
 # Start syncing/port forwarding
