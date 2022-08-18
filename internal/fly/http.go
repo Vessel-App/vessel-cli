@@ -23,7 +23,7 @@ func DoRequest(token string, r FlyRequest) ([]byte, error) {
 	}
 
 	client := &http.Client{
-		Timeout: time.Second * 5,
+		Timeout: time.Second * 6,
 	}
 
 	result, err := client.Do(req)
