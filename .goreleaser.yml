@@ -1,0 +1,13 @@
+builds:
+  -
+    id: vessel
+    main: ./main.go
+    binary: vessel
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
