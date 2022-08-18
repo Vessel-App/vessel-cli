@@ -1,9 +1,0 @@
-remote:
-  hostname: host.example.org
-  # user: myuser
-  identityfile: ~/.ssh/id_rsa
-  port: 22
-  path: /home/myuser/myapp
-
-forwarding:
-  - 8000:8000

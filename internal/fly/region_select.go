@@ -5,12 +5,6 @@ import (
 	"github.com/umahmood/haversine"
 )
 
-type Region struct {
-	Code, Name   string
-	Location     haversine.Coord
-	UserDistance float64
-}
-
 // Distance calculates the distance between region and a given point
 func (r *Region) Distance(p haversine.Coord) float64 {
 	mi, km := haversine.Distance(p, r.Location)

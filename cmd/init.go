@@ -9,10 +9,10 @@ import (
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/environments"
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"github.com/vessel-app/vessel-cli/internal/vessel"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -63,7 +63,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	appName = slug.Make(appName)
 
-	// TODO: If this app exists, ask if we should over-write stuff
+	// TODO: If this app exists, ask if we should over-write ~/.vessel/<app-name> files
 
 	// Create ~/.vessel/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
@@ -101,26 +101,38 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	selectRegion := promptui.Select{
-		Label: "Which region is closest to you?",
-		Items: fly.Regions,
-		Templates: &promptui.SelectTemplates{
-			Active:   fmt.Sprintf("%s {{ .Code | underline }}{{ `-` | underline }}{{ .Name | underline }}", promptui.IconSelect),
-			Inactive: "  {{ .Code }} - {{ .Name }}",
-			Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Code| faint }}{{ "-" | faint }}{{ .Name | faint }}`, promptui.IconGood),
-		},
-		Size: len(fly.Regions),
-	}
-
-	idx, _, err := selectRegion.Run()
+	var nearestRegionCode string
+	region, err := fly.GetNearestRegion(auth.Token)
 
 	if err != nil {
-		// User likely bailed out
-		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
-		os.Exit(1)
+		logger.GetLogger().Debug("cmd", "init", "msg", "could not automatically find nearest region", "error", err)
+
+		// If we can't get the nearest region, have them select a region
+		selectRegion := promptui.Select{
+			Label: "Which region is closest to you?",
+			Items: fly.Regions,
+			Templates: &promptui.SelectTemplates{
+				Active:   fmt.Sprintf("%s {{ .Code | underline }}{{ `-` | underline }}{{ .Name | underline }}", promptui.IconSelect),
+				Inactive: "  {{ .Code }} - {{ .Name }}",
+				Selected: fmt.Sprintf(`{{ "%s" | green }} {{ .Code| faint }}{{ "-" | faint }}{{ .Name | faint }}`, promptui.IconGood),
+			},
+			Size: len(fly.Regions),
+		}
+
+		idx, _, err := selectRegion.Run()
+
+		if err != nil {
+			// User likely bailed out
+			logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
+			os.Exit(1)
+		}
+
+		nearestRegionCode = fly.Regions[idx].Code
+	} else {
+		nearestRegionCode = region.NearestRegion.Code
 	}
 
-	env, err := vessel.CreateEnvironment(auth.TeamGuid, appName, string(keys.Public), fly.Regions[idx].Code, auth.Token)
+	env, err := environments.CreateEnvironment(auth.Token, appName, auth.Org, nearestRegionCode, string(keys.Public))
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
@@ -132,7 +144,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	w := wow.New(os.Stdout, spin.Get(spin.Dots), " Environment registered, waiting for it to become available")
 	w.Start()
 
-	e, err := vessel.WaitForEnvironment(auth.TeamGuid, env.Id, auth.Token)
+	err = fly.WaitForMachine(auth.Token, appName, env.FlyMachine)
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not get dev environment status", "error", err)
 		PrintIfVerbose(Verbose, err, "error creating dev environment")
@@ -155,7 +167,7 @@ Host vessel-%s
     IdentityFile %s
     IdentitiesOnly yes
     AddressFamily inet6
-`, appName, e.IpAddress, privateKeyPath)
+`, appName, env.FlyIp, privateKeyPath)
 
 	_, err = canAddSSHAlias.Run()
 
@@ -189,9 +201,9 @@ remote:
 
 forwarding:
   - 8000:80
-`, appName, e.IpAddress, privateKeyPath, appName)
+`, appName, env.FlyIp, privateKeyPath, appName)
 
-	if err = ioutil.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
+	if err = os.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 
