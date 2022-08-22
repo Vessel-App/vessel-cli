@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/vessel-app/vessel-cli/internal/logger"
-	"github.com/vessel-app/vessel-cli/internal/process"
 	"os/exec"
 	"strings"
 )
@@ -12,7 +11,7 @@ import (
 // Sync uses Mutagen to start a sync with the given SSH and file path information
 // TODO: We assume ssh alias defined in ~/.ssh/config is the only way to go
 func Sync(name, alias, local_path, remote_path string) (string, error) {
-	exe, err := exec.LookPath(process.ExecutableName("mutagen"))
+	exe, err := GetMutagenPath()
 
 	if err != nil {
 		return "", fmt.Errorf("unable to determine mutagen path: %w", err)
@@ -51,7 +50,7 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return "", fmt.Errorf("mutagen sync error: %s \n %s", exitError.String(), output)
+			return "", fmt.Errorf("mutagen sync error: %s \n %s", exitError.Error(), output)
 		} else {
 			return "", fmt.Errorf("unable start mutagen sync: %w", err)
 		}
@@ -61,7 +60,7 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 }
 
 func StopSync(name string) error {
-	exe, err := exec.LookPath(process.ExecutableName("mutagen"))
+	exe, err := GetMutagenPath()
 
 	if err != nil {
 		return fmt.Errorf("unable to determine mutagen path: %w", err)
@@ -112,7 +111,7 @@ func findSyncSessions(exe string) ([]SyncSession, error) {
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return nil, fmt.Errorf("mutagen list syncs error: %s \n %s", exitError.String(), output)
+			return nil, fmt.Errorf("mutagen list syncs error: %s \n %s", exitError.Error(), output)
 		} else {
 			return nil, fmt.Errorf("unable to list mutagen sync sessions: %w", err)
 		}

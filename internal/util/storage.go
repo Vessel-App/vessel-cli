@@ -72,3 +72,47 @@ func MakeAppDir(appName string) (string, error) {
 
 	return vesselAppPath, nil
 }
+
+func MakeBinDir() (string, error) {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		return "", fmt.Errorf("could not find home dir: %w", err)
+	}
+
+	vesselBinPath := filepath.FromSlash(home + "/.vessel/bin")
+
+	// Check if the ~/.vessel/bin directory exists already
+	// We assume a home directory always exists
+	// We assume a ~/.vessel directory already exists
+	stat, err := os.Stat(vesselBinPath)
+
+	if err == nil && stat.IsDir() {
+		// path exists already
+		return vesselBinPath, nil
+	} else if err == nil && !stat.IsDir() {
+		// path exists but is not a directory
+		return "", fmt.Errorf("could not create directory ~/.vessel/bin as a file with that name already exists")
+	} else if os.IsNotExist(err) {
+		// path does not exist, create it
+		if err := os.Mkdir(vesselBinPath, 0750); err != nil {
+			return "", fmt.Errorf("could not create vessel bin directory: %w", err)
+		}
+
+		return vesselBinPath, nil
+	} else if err != nil {
+		return "", fmt.Errorf("stat error: %w", err)
+	}
+
+	return vesselBinPath, nil
+}
+
+func GetBinDir() (string, error) {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		return "", fmt.Errorf("could not find home dir: %w", err)
+	}
+
+	return filepath.FromSlash(home + "/.vessel/bin"), nil
+}

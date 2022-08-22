@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/vessel-app/vessel-cli/internal/logger"
-	"github.com/vessel-app/vessel-cli/internal/process"
 	"os/exec"
 	"strings"
 )
@@ -12,7 +11,7 @@ import (
 // Forward uses Mutagen to start a forward with the given ports
 // TODO: We assume ssh alias defined in ~/.ssh/config is the only way to go
 func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
-	exe, err := exec.LookPath(process.ExecutableName("mutagen"))
+	exe, err := GetMutagenPath()
 
 	if err != nil {
 		return "", fmt.Errorf("unable to determine mutagen path: %v", err)
@@ -47,7 +46,7 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return "", fmt.Errorf("mutagen forward error: %s \n %s", exitError.String(), output)
+			return "", fmt.Errorf("mutagen forward error: %s \n %s", exitError.Error(), output)
 		} else {
 			return "", fmt.Errorf("unable start mutagen forward: %w", err)
 		}
@@ -57,7 +56,7 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 }
 
 func StopForward(name string) error {
-	exe, err := exec.LookPath(process.ExecutableName("mutagen"))
+	exe, err := GetMutagenPath()
 
 	if err != nil {
 		return fmt.Errorf("unable to determine mutagen path: %w", err)
@@ -109,7 +108,7 @@ func findForwardSessions(exe string) ([]ForwardSession, error) {
 
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
-			return nil, fmt.Errorf("mutagen list forwards error: %s \n %s", exitError.String(), output)
+			return nil, fmt.Errorf("mutagen list forwards error: %s \n %s", exitError.Error(), output)
 		} else {
 			return nil, fmt.Errorf("unable to list mutagen forward sessions: %w", err)
 		}
