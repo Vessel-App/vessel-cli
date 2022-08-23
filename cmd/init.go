@@ -232,7 +232,7 @@ forwarding:
 		os.Exit(1)
 	}
 
-	w.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen installed")
+	w2.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen installed")
 
 	fmt.Println("You're good to go! Run `vessel start` to begin developing!")
 }
