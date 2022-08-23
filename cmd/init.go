@@ -211,7 +211,7 @@ forwarding:
 		os.Exit(1)
 	}
 
-	w2 := wow.New(os.Stdout, spin.Get(spin.Dots), " Installing Mutagen")
+	w2 := wow.New(os.Stdout, spin.Get(spin.Dots), " Configuring Mutagen")
 	w2.Start()
 
 	_, err = util.MakeBinDir()
