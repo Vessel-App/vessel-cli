@@ -11,7 +11,7 @@ import (
 // Forward uses Mutagen to start a forward with the given ports
 // TODO: We assume ssh alias defined in ~/.ssh/config is the only way to go
 func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
-	exe, err := GetMutagenPath()
+	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
 		return "", fmt.Errorf("unable to determine mutagen path: %v", err)
@@ -56,7 +56,7 @@ func Forward(name, localSocket, alias, remoteSocket string) (string, error) {
 }
 
 func StopForward(name string) error {
-	exe, err := GetMutagenPath()
+	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
 		return fmt.Errorf("unable to determine mutagen path: %w", err)

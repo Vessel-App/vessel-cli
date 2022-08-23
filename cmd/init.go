@@ -12,6 +12,7 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/environments"
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
+	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"io/ioutil"
 	"os"
@@ -209,6 +210,29 @@ forwarding:
 
 		os.Exit(1)
 	}
+
+	w2 := wow.New(os.Stdout, spin.Get(spin.Dots), " Installing Mutagen")
+	w2.Start()
+
+	_, err = util.MakeBinDir()
+
+	if err != nil {
+		logger.GetLogger().Error("command", "init", "msg", "could not create ~/.vessel/bin directory", "error", err)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
+		os.Exit(1)
+	}
+
+	err = mutagen.InstallMutagen()
+
+	if err != nil {
+		logger.GetLogger().Error("command", "init", "msg", "could not install mutagen to ~/.vessel/bin/mutagen", "error", err)
+		PrintIfVerbose(Verbose, err, "error initializing app")
+
+		os.Exit(1)
+	}
+
+	w.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen installed")
 
 	fmt.Println("You're good to go! Run `vessel start` to begin developing!")
 }

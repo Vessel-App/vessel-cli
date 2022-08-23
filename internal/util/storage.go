@@ -70,9 +70,11 @@ func MakeAppDir(appName string) (string, error) {
 		return "", fmt.Errorf("stat error: %w", err)
 	}
 
+	// Directory already exists
 	return vesselAppPath, nil
 }
 
+// MakeBinDir creates a ~/.vessel/bin directory
 func MakeBinDir() (string, error) {
 	home, err := homedir.Dir()
 
@@ -104,9 +106,12 @@ func MakeBinDir() (string, error) {
 		return "", fmt.Errorf("stat error: %w", err)
 	}
 
+	// Directory already exists
 	return vesselBinPath, nil
 }
 
+// GetBinDir returns the full path for the bin directory
+// ~/.vessel/bin
 func GetBinDir() (string, error) {
 	home, err := homedir.Dir()
 

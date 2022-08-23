@@ -11,7 +11,7 @@ import (
 // Sync uses Mutagen to start a sync with the given SSH and file path information
 // TODO: We assume ssh alias defined in ~/.ssh/config is the only way to go
 func Sync(name, alias, local_path, remote_path string) (string, error) {
-	exe, err := GetMutagenPath()
+	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
 		return "", fmt.Errorf("unable to determine mutagen path: %w", err)
@@ -60,7 +60,7 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 }
 
 func StopSync(name string) error {
-	exe, err := GetMutagenPath()
+	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
 		return fmt.Errorf("unable to determine mutagen path: %w", err)

@@ -7,7 +7,7 @@ import (
 	"runtime"
 )
 
-func GetMutagenPath() (string, error) {
+func GetMutagenCommandPath() (string, error) {
 	binDir, err := util.GetBinDir()
 
 	if err != nil {

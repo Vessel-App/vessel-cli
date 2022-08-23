@@ -8,7 +8,7 @@ import (
 
 // StopMutagenDaemon will try to stop a running mutagen daemon
 func StopMutagenDaemon() (string, error) {
-	exe, err := GetMutagenPath()
+	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
 		return "", fmt.Errorf("unable to determine mutagen path: %w", err)
