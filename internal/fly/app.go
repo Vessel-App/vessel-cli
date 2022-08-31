@@ -20,7 +20,7 @@ func (r *CreateAppRequest) ToRequest(token string) (*http.Request, error) {
 	data := []byte(fmt.Sprintf(`{"app_name": "%s", "org_slug": "%s"}`, r.AppName, r.OrgSlug))
 
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, "http://_api.internal:4280/v1/apps", bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, "http://"+flyApiHost+":4280/v1/apps", bytes.NewBuffer(data))
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -63,7 +63,7 @@ type GetAppRequest struct {
 
 func (r *GetAppRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s", r.AppName), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s", r.AppName), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -107,7 +107,7 @@ type DeleteAppRequest struct {
 
 func (r *DeleteAppRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s", r.AppName), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s", r.AppName), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)

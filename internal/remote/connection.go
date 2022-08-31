@@ -91,6 +91,8 @@ func (c *Connection) Cmd(cmd string) error {
 	return nil
 }
 
+// SSH opens an SSH session into an environment.
+// See https://gist.github.com/zdwork/5d1898b3d5256c8324d0ed4435ea49f7
 func (c *Connection) SSH(ctx context.Context) error {
 	config, err := c.clientConfig()
 

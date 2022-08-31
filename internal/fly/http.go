@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"time"
 )
+
+var flyApiHost string
 
 type GraphResponse struct {
 	Data interface{} `json:"data"`
@@ -13,6 +16,20 @@ type GraphResponse struct {
 
 type FlyRequest interface {
 	ToRequest(token string) (*http.Request, error)
+}
+
+func init() {
+	// Use "_api.internal" if connected to Fly's VPN
+	flyHost := os.Getenv("FLY_HOST")
+
+	if len(flyHost) > 0 {
+		flyApiHost = flyHost
+		return
+	}
+
+	// Else we assume the use of
+	// "fly machines api-proxy"
+	flyApiHost = "127.0.0.1"
 }
 
 func DoRequest(token string, r FlyRequest) ([]byte, error) {

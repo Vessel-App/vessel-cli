@@ -26,7 +26,7 @@ func (m *RunMachineRequest) ToRequest(token string) (*http.Request, error) {
 	data := []byte(fmt.Sprintf(`{"name": "vessel-php", "region": "%s", "config": {"image": "%s", "env": {%s}, "services": [{"internal_port": 2222, "protocol": "tcp", "ports":[{"port": 22}]}]}}`, m.Region, m.Image, env))
 
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines", m.App), bytes.NewBuffer(data))
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines", m.App), bytes.NewBuffer(data))
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -76,7 +76,7 @@ type ListMachinesResponse struct {
 
 func (m *ListMachinesRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines", m.App), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines", m.App), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -118,7 +118,7 @@ type GetMachineRequest struct {
 
 func (m *GetMachineRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines/%s", m.App, m.Machine), nil)
+	req, err := http.NewRequest(http.MethodGet, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines/%s", m.App, m.Machine), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -161,7 +161,7 @@ type StartMachineRequest struct {
 
 func (m *StartMachineRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines/%s/start", m.App, m.Machine), nil)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines/%s/start", m.App, m.Machine), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -196,7 +196,7 @@ type StopMachineRequest struct {
 
 func (m *StopMachineRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines/%s/stop", m.App, m.Machine), nil)
+	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines/%s/stop", m.App, m.Machine), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
@@ -231,7 +231,7 @@ type DeleteMachineRequest struct {
 
 func (m *DeleteMachineRequest) ToRequest(token string) (*http.Request, error) {
 	// TODO: Decide on url to use (vpn vs proxy)
-	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://_api.internal:4280/v1/apps/%s/machines/%s", m.App, m.Machine), nil)
+	req, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines/%s", m.App, m.Machine), nil)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not create http request object: %w", err)
