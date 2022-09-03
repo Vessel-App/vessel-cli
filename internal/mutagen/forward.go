@@ -71,7 +71,8 @@ func StopForward(name string) error {
 	// It's theoretically possible to have multiple sessions of the same name
 	// open, so we'll close all that match this app name
 	for _, session := range sessions {
-		if session.Name == name {
+		// Match any forwarding sessions starting with "<app-name>-"
+		if strings.HasPrefix(session.Name, fmt.Sprintf("%s-", name)) {
 			stopForward := &exec.Cmd{
 				Path: exe,
 				Args: []string{

@@ -47,23 +47,25 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// TODO: Forward multiple ports
-	ports := strings.Split(cfg.Forwarding[0], ":")
+	// Forward multiple ports
+	for k, p := range cfg.Forwarding {
+		ports := strings.Split(p, ":")
 
-	if len(ports) != 2 {
-		logger.GetLogger().Error("command", "start", "msg", "invalid port forwarding configuration", "error", fmt.Errorf("Port forwarding configuration must define both ports to forward separated by a colon, e.g. 8000:8000"))
-		PrintIfVerbose(Verbose, err, "error starting syncing session")
+		if len(ports) != 2 {
+			logger.GetLogger().Error("command", "start", "msg", "invalid port forwarding configuration", "error", fmt.Errorf("port forwarding configuration must define both ports to forward separated by a colon, e.g. 8000:8000"))
+			PrintIfVerbose(Verbose, err, "error starting syncing session")
 
-		os.Exit(1)
-	}
+			os.Exit(1)
+		}
 
-	_, err = mutagen.Forward(name, "tcp:127.0.0.1:"+ports[0], cfg.Remote.Alias, "tcp:127.0.0.1:"+ports[1])
+		_, err = mutagen.Forward(fmt.Sprintf("%s-%d", name, k), "tcp:127.0.0.1:"+ports[0], cfg.Remote.Alias, "tcp:127.0.0.1:"+ports[1])
 
-	if err != nil {
-		logger.GetLogger().Error("command", "start", "msg", "error starting forwarding session", "error", err)
-		PrintIfVerbose(Verbose, err, "error starting forwarding session")
+		if err != nil {
+			logger.GetLogger().Error("command", "start", "msg", "error starting forwarding session", "error", err)
+			PrintIfVerbose(Verbose, err, "error starting forwarding session")
 
-		os.Exit(1)
+			os.Exit(1)
+		}
 	}
 
 	fmt.Println("Started development session")
