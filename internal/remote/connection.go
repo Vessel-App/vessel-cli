@@ -59,6 +59,26 @@ func (c *Connection) clientConfig() (*ssh.ClientConfig, error) {
 	}, nil
 }
 
+func (c *Connection) TestConnection() error {
+	config, err := c.clientConfig()
+
+	if err != nil {
+		return fmt.Errorf("could not create ssh client config: %w", err)
+	}
+
+	hostSocket := net.JoinHostPort(c.config.Hostname, strconv.Itoa(c.config.Port))
+
+	conn, err := ssh.Dial("tcp", hostSocket, config)
+
+	if err != nil {
+		return fmt.Errorf("cannot connect %v: %w", hostSocket, err)
+	}
+
+	defer conn.Close()
+
+	return nil
+}
+
 func (c *Connection) Cmd(cmd string) error {
 	config, err := c.clientConfig()
 

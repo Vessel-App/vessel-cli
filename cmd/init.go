@@ -13,10 +13,12 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
+	"github.com/vessel-app/vessel-cli/internal/remote"
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 var initCmd = &cobra.Command{
@@ -64,8 +66,6 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	appName = slug.Make(appName)
 
-	// TODO: If this app exists, ask if we should over-write ~/.vessel/<app-name> files
-
 	// Create ~/.vessel/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
 
@@ -102,6 +102,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// Get user's nearest Fly region
 	var nearestRegionCode string
 	region, err := fly.GetNearestRegion(auth.Token)
 
@@ -133,6 +134,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		nearestRegionCode = region.NearestRegion.Code
 	}
 
+	// Create dev environment
 	env, err := environments.CreateEnvironment(auth.Token, appName, auth.Org, nearestRegionCode, string(keys.Public))
 
 	if err != nil {
@@ -168,6 +170,8 @@ Host vessel-%s
     IdentityFile %s
     IdentitiesOnly yes
     AddressFamily inet6
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
 `, appName, env.FlyIp, privateKeyPath)
 
 	_, err = canAddSSHAlias.Run()
@@ -190,6 +194,7 @@ Host vessel-%s
 		}
 	}
 
+	// Generate project configuration file
 	yaml := fmt.Sprintf(`name: %s
 
 remote:
@@ -211,6 +216,7 @@ forwarding:
 		os.Exit(1)
 	}
 
+	// Ensure Mutagen is installed
 	w2 := wow.New(os.Stdout, spin.Get(spin.Dots), " Configuring Mutagen")
 	w2.Start()
 
@@ -232,7 +238,45 @@ forwarding:
 		os.Exit(1)
 	}
 
-	w2.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen installed")
+	w2.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen is ready")
+
+	// Wait for SSH to become available
+	w3 := wow.New(os.Stdout, spin.Get(spin.Dots), " Waiting for environment to become available")
+	w3.Start()
+
+	cfg, err := config.RetrieveProjectConfig(ConfigPath)
+
+	if err != nil {
+		logger.GetLogger().Error("command", "init", "error", err)
+		PrintIfVerbose(Verbose, err, "could not read configuration")
+
+		os.Exit(1)
+	}
+
+	connection := remote.NewConnection(&cfg.Remote)
+
+	// Wait for up to ~30 seconds for SSH to become available
+	// (15 attempts, attempted every 2 seconds)
+	attempts := 0
+	success := false
+	for attempts <= 15 {
+		if err := connection.TestConnection(); err != nil {
+			time.Sleep(time.Second * 2)
+			attempts++
+		} else {
+			success = true
+			break
+		}
+	}
+
+	if !success {
+		logger.GetLogger().Error("command", "init", "error", err)
+		PrintIfVerbose(Verbose, err, "could not connect to dev environment")
+
+		os.Exit(1)
+	}
+
+	w3.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Environment is reachable")
 
 	fmt.Println("You're good to go! Run `vessel start` to begin developing!")
 }
