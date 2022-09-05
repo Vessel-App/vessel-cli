@@ -12,7 +12,7 @@ type Environment struct {
 	FlyMachine string
 }
 
-func CreateEnvironment(token, appName, org, region, pubKey string) (*Environment, error) {
+func CreateEnvironment(token, appName, image, org, region, pubKey string) (*Environment, error) {
 	// Create App
 	app, err := fly.CreateApp(token, appName, org)
 
@@ -21,7 +21,7 @@ func CreateEnvironment(token, appName, org, region, pubKey string) (*Environment
 	}
 
 	// Run Machine (image + env var)
-	machine, err := fly.RunMachine(token, appName, region, "vesselapp/php:8.1", pubKey)
+	machine, err := fly.RunMachine(token, appName, region, image, pubKey)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not run machine: %w", err)

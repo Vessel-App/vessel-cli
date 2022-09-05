@@ -34,6 +34,17 @@ func init() {
 	initCmd.Flags().StringVarP(&AppName, "name", "n", "", "Set the environment name")
 }
 
+// runInitCommand will guide users through setting up a new development environment.
+// It performs the following actions:
+//   1. Retrieves vessel configuration
+//   2. Helps create an environment name
+//   3. Prompts for dev env type (PHP, etc)
+//   4. Generates env files (SSH keys, etc)
+//   5. Gets user's nearest region
+//   6. Creates the dev environment
+//   7. Generates project and SSH configuration
+//   8. Downloads Mutagen (if needed)
+//   9. Waits for dev env to be available
 func runInitCommand(cmd *cobra.Command, args []string) {
 	auth, err := config.RetrieveVesselConfig()
 
@@ -65,6 +76,30 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	appName = slug.Make(appName)
+
+	// Get image to use (development environment type)
+	bundledTypes := []string{"vesselapp/php:8.1", "vesselapp/php:8.0"}
+	typeIndex := -1
+	var envDockerImage string
+
+	for typeIndex < 0 {
+		typePrompt := promptui.SelectWithAdd{
+			Label:    "What Docker base image should we use?",
+			Items:    bundledTypes,
+			AddLabel: "Other",
+		}
+
+		typeIndex, envDockerImage, err = typePrompt.Run()
+
+		if typeIndex == -1 {
+			bundledTypes = append(bundledTypes, envDockerImage)
+		}
+	}
+
+	if err != nil {
+		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting Docker image", "error", err)
+		os.Exit(1)
+	}
 
 	// Create ~/.vessel/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
@@ -135,7 +170,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Create dev environment
-	env, err := environments.CreateEnvironment(auth.Token, appName, auth.Org, nearestRegionCode, string(keys.Public))
+	env, err := environments.CreateEnvironment(auth.Token, appName, envDockerImage, auth.Org, nearestRegionCode, string(keys.Public))
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)

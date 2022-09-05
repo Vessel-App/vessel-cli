@@ -13,6 +13,7 @@ type AuthConfig struct {
 
 type EnvironmentConfig struct {
 	Name       string       `yaml:"name"`
+	Image      string       `yaml:"image"`
 	Remote     RemoteConfig `yaml:"remote"`
 	Forwarding []string     `yaml:"forwarding"`
 }
@@ -23,7 +24,7 @@ type RemoteConfig struct {
 	IdentityFile string `yaml:"identityfile"`
 	Port         int    `yaml:"port"`
 	RemotePath   string `yaml:"path"`
-	Alias        string `yaml:alias,omitempty`
+	Alias        string `yaml:"alias,omitempty"`
 }
 
 func (c *EnvironmentConfig) Valid() (bool, error) {
