@@ -78,6 +78,20 @@ vessel stop
 Your project will contain a `vesssel.yml` file. You can customize this to forward additional ports. By default, it will forward
 localhost port `8000` to the development environment's port `80`.
 
+## Global Configuration
+
+You'll find global configuration and a debug log file in `~/.vessel`:
+
+* `~/.vessel/config.yml` - Configuration including your Fly API token and the Fly organization used
+* `~/.vessel/debug.log` - Logs to help troubleshoot issues.
+* `~/.vessel/<your-project>` - A directory containing SSH keys used to access your dev environment
+
+## Debugging
+
+Use `LOG_LEVEL=debug vessel ...` to get a bit more information output to your `~/.vessel/debug.log` file.
+
+Try adding the `-v` flag to any `vessel` command to get complete errors output directly to your console, e.g. `vessel -v init`
+
 ## I'm a Windows user
 
 I haven't had a chance to test this on Windows.
