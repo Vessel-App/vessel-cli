@@ -11,3 +11,5 @@ builds:
     goarch:
       - amd64
       - arm64
+    ldflags:
+      - -X github.com/vessel-app/vessel-cli/cmd.Version={{ .Version }}

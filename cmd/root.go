@@ -7,6 +7,8 @@ import (
 	"os"
 )
 
+var Version = "dev"
+
 // Verbose sets the verbosity of error messaging for each command (show or hide specific error messages)
 var Verbose bool
 
@@ -43,6 +45,8 @@ func Execute() {
 		stopCmd,
 	}
 
+	rootCmd.Version = Version
+	rootCmd.SetVersionTemplate("{{.Version}}\n")
 	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose output")
 	rootCmd.AddCommand(commands...)
 	if err := rootCmd.Execute(); err != nil {
