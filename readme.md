@@ -21,32 +21,35 @@ This project:
 
 1️⃣ First, install dependencies:
 
-1. [Install `flyctl`](https://fly.io/docs/getting-started/installing-flyctl/) and create a Fly account
-2. [Install `mutagen`](https://mutagen.io/documentation/introduction/installation) to sync code / forward ports
-3. Install this thing by uhhhhh, downloading the right binary from [releases](https://github.com/Vessel-App/vessel-cli/releases). I'll figure something nicer out.
-    - M1/M2 Macs should grab the `Darwin ARM64` file
-    - Intel Macs should grab the `Darwin AMD64` file
-    - Linux desktop users already know what to pick. You poor, wretched sods
+1. [Install `flyctl`](https://fly.io/docs/getting-started/installing-flyctl/) and create a Fly account via `fly auth signup`
+2. Install `vessel`
 
-2️⃣ Then install `vessel` from the [releases](https://github.com/Vessel-App/vessel-cli/releases) page. (I'll improve this soon).
-
-- M1/M2 Macs should grab the `Darwin ARM64` file
-- Intel Macs should grab the `Darwin AMD64` file
-- Linux desktop users already know what to pick. You poor, wretched sods
-
-3️⃣ Then authenticate.
+For Mac/Linux, you can install `vessel` this way:
 
 ```bash
-# If you logged in with `fly auth login`
+# Don't forget to follow instructions to add ~/.vessel/bin to your $PATH
+curl https://vessel.fly.dev/stable/install.sh | sh
+```
+
+> 😭 I haven't built nor tested this on Windows yet.
+
+2️⃣ Then authenticate Vessel
+
+```bash
+# If you already logged in with `fly auth login`
 vessel auth
 
-# If you have a Fly API token
+# Else, if you have a Fly API token
 vessel auth -t YOUR_TOKEN_HERE
 ```
 
-4️⃣ Then head to a code base and run initialize your project.
+This gives Vessel access to the Fly API token that you'd like to use. If the API token is specific to your default organization, we'll use that. Otherwise, we'll prompt to ask which organization to use.
+Each Fly.io organization is billed separately.
+
+3️⃣ Then head to a code base and run initialize your project.
 
 ```bash
+# Probably a Laravel project
 cd ~/Code/some-laravel-project
 vessel init
 ```
@@ -61,14 +64,19 @@ vessel start
 ## (Dependencies aren't synced)
 ## You can also run `vessel cmd <some command here>`
 vessel -- composer install
-vessel -- npm install && npm run build
+vessel -- "npm install && npm run build"
 
-# Open localhost:8000 in your browser
+# Open http://localhost:8000 in your browser
 vessel open
 
 # When you're done:
 vessel stop
 ```
+
+## Project Configuration
+
+Your project will contain a `vesssel.yml` file. You can customize this to forward additional ports. By default, it will forward
+localhost port `8000` to the development environment's port `80`.
 
 ## I'm a Windows user
 
@@ -84,8 +92,3 @@ It's inspired by:
 
 1. Me having a new computer and not wanting to install so much crap into it
 2. Amos's [article on remote dev on Fly](https://fasterthanli.me/articles/remote-development-with-rust-on-fly-io) (This project is a bit different, but I totally stole his Rust code)
-
-## TODO
-- [ ] Download a set version of mutagen for the current OS to embed (~12M)
-- [ ] Config for base URL
-- [ ] Forward all defined ports in `.vessel.yml`
