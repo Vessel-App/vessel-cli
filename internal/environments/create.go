@@ -12,7 +12,7 @@ type Environment struct {
 	FlyMachine string
 }
 
-func CreateEnvironment(token, appName, image, org, region, pubKey string) (*Environment, error) {
+func CreateEnvironment(token, appName, image, org, region, pubKey string, ipv6 bool) (*Environment, error) {
 	// Create App
 	app, err := fly.CreateApp(token, appName, org)
 
@@ -28,7 +28,7 @@ func CreateEnvironment(token, appName, image, org, region, pubKey string) (*Envi
 	}
 
 	// Allocate IP
-	ip, err := fly.AllocateIp(token, appName, true)
+	ip, err := fly.AllocateIp(token, appName, ipv6)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not allocate ip: %w", err)

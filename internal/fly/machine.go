@@ -23,7 +23,7 @@ func (m *RunMachineRequest) ToRequest(token string) (*http.Request, error) {
 	}
 	env = strings.TrimRight(env, ",")
 
-	data := []byte(fmt.Sprintf(`{"name": "vessel-php", "region": "%s", "config": {"image": "%s", "env": {%s}, "services": [{"internal_port": 2222, "protocol": "tcp", "ports":[{"port": 22}]}]}}`, m.Region, m.Image, env))
+	data := []byte(fmt.Sprintf(`{"name": "vessel-php", "region": "%s", "config": {"image": "%s", "env": {%s}, "services": [{"internal_port": 2222, "protocol": "tcp", "ports":[{"port": 22}]}, {"internal_port": 80, "protocol": "tcp", "ports":[{"port": 80, "handlers": ["http"]},{"port": 443, "handlers": ["tls", "http"]}]}]}}`, m.Region, m.Image, env))
 
 	// TODO: Decide on url to use (vpn vs proxy)
 	req, err := http.NewRequest(http.MethodPost, fmt.Sprintf("http://"+flyApiHost+":4280/v1/apps/%s/machines", m.App), bytes.NewBuffer(data))

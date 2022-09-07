@@ -23,28 +23,31 @@ import (
 
 var initCmd = &cobra.Command{
 	Use:   "init",
-	Short: "Configure an environment.",
-	Long:  `Configure and create a remote dev environment.`,
-	Run:   runInitCommand,
+	Short: "Create a dev environment.",
+	Long: `Configure and create a remote dev environment.
+Defaults to assigning an IPv6 address. Use the -4 flag to use IPv4 instead.`,
+	Run: runInitCommand,
 }
 
 var AppName string
+var UseIpv4 bool
 
 func init() {
 	initCmd.Flags().StringVarP(&AppName, "name", "n", "", "Set the environment name")
+	initCmd.Flags().BoolVarP(&UseIpv4, "ipv4", "4", false, "Allocate an IPv4 instead of IPv6 to the environment")
 }
 
 // runInitCommand will guide users through setting up a new development environment.
 // It performs the following actions:
-//   1. Retrieves vessel configuration
-//   2. Helps create an environment name
-//   3. Prompts for dev env type (PHP, etc)
-//   4. Generates env files (SSH keys, etc)
-//   5. Gets user's nearest region
-//   6. Creates the dev environment
-//   7. Generates project and SSH configuration
-//   8. Downloads Mutagen (if needed)
-//   9. Waits for dev env to be available
+//  1. Retrieves vessel configuration
+//  2. Helps create an environment name
+//  3. Prompts for dev env type (PHP, etc)
+//  4. Generates env files (SSH keys, etc)
+//  5. Gets user's nearest region
+//  6. Creates the dev environment
+//  7. Generates project and SSH configuration
+//  8. Downloads Mutagen (if needed)
+//  9. Waits for dev env to be available
 func runInitCommand(cmd *cobra.Command, args []string) {
 	auth, err := config.RetrieveVesselConfig()
 
@@ -170,7 +173,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	// Create dev environment
-	env, err := environments.CreateEnvironment(auth.Token, appName, envDockerImage, auth.Org, nearestRegionCode, string(keys.Public))
+	env, err := environments.CreateEnvironment(auth.Token, appName, envDockerImage, auth.Org, nearestRegionCode, string(keys.Public), !UseIpv4)
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
