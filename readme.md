@@ -17,9 +17,13 @@ This project:
 >
 > It'll turn back on automatically when you re-connect.
 
-## Get Started
+## How to Use This
 
-1️⃣ First, install dependencies:
+Here's how to install and use Vessel.
+
+### 1️⃣ Install
+
+First, install dependencies:
 
 1. [Install `flyctl`](https://fly.io/docs/getting-started/installing-flyctl/) and create a Fly account via `fly auth signup`
 2. Install `vessel`
@@ -27,13 +31,12 @@ This project:
 For Mac/Linux, you can install `vessel` this way:
 
 ```bash
-# Don't forget to follow instructions to add ~/.vessel/bin to your $PATH
+# 👉 Don't forget to follow instructions to add ~/.vessel/bin to your $PATH
 curl https://vessel.fly.dev/stable/install.sh | sh
 ```
 
-> 😭 I haven't built nor tested this on Windows yet.
-
-2️⃣ Then authenticate Vessel
+### 2️⃣ Authenticate
+Then authenticate Vessel
 
 ```bash
 # If you already logged in with `fly auth login`
@@ -46,7 +49,9 @@ vessel auth -t YOUR_TOKEN_HERE
 This gives Vessel access to the Fly API token that you'd like to use. If the API token is specific to your default organization, we'll use that. Otherwise, we'll prompt to ask which organization to use.
 Each Fly.io organization is billed separately.
 
-3️⃣ Then head to a code base and run initialize your project.
+### 3️⃣ Start a project
+
+Head to a code base and run initialize your project.
 
 ```bash
 # Probably a Laravel project
@@ -54,7 +59,9 @@ cd ~/Code/some-laravel-project
 vessel init
 ```
 
-🔁 Once that's finished, run the `start` command to enable file syncing / port forwarding
+### 🔁 Usage
+
+Once that's finished, run the `start` command to enable file syncing / port forwarding
 
 ```bash
 # Start syncing/port forwarding
@@ -75,8 +82,39 @@ vessel stop
 
 ## Project Configuration
 
-Your project will contain a `vesssel.yml` file. You can customize this to forward additional ports. By default, it will forward
-localhost port `8000` to the development environment's port `80`.
+Your project will contain a `vesssel.yml` file. You can customize this to forward additional ports.
+
+By default, it will forward localhost port `8000` to the development environment's port `80`.
+
+## SSH and Commands
+
+You can run one-off commands and SSH into your environments.
+
+> File syncing (and port forwarding) is done via [mutagen](https://github.com/mutagen-io/mutagen), which also works over SSH. 
+
+### One-Off Commands
+
+Vessel supports one-off commands two ways:
+
+1. `vessel -- composer install` - This will run `composer install` after connecting to your dev env
+2. `vessel cmd npm install` - Similarly, This will run `npm install` after connecting to the dev env
+
+Commands are run from the `~/app` directory within the dev environment. If you run a one-off command without first syncing, you may get
+errors about the `~/app` working directory not existing.
+
+### SSH
+
+This project configures an easy way to SSH into the dev environment. 
+After you run `vessel init`, check your `~/.ssh/config` file to see a new alias created there. You should be able to SSH to the server without the `vessel` command:
+
+```bash
+# SSH via vessel
+vessel ssh
+
+# SSH outside of Vessel
+# This will match a host set in ~/.ssh/config
+ssh vessel-<my-project-name>
+```
 
 ## Global Configuration
 
@@ -97,6 +135,16 @@ Try adding the `-v` flag to any `vessel` command to get complete errors output d
 I haven't had a chance to test this on Windows.
 
 Theoretically I've made the code work for some subset of Windows users (based on [Mutagen's requirements](https://mutagen.io/documentation/transports/ssh#windows)).
+
+## Ephemeral Environments
+
+The environments will shut down after 5 minutes of inactivity. In activity means no active SSH connections (file syncing via `vessel start` counts as an active SSH session).
+
+This means you won't be charged for usage when environments are not in use. However, the environments are ephemeral. When you start an environment back up,
+**it's as if you're starting from a blank slate**. Your files will get re-synced when you run `vessel start` next, but you'll need to ensure any data you need
+is put back into place (for now!).
+
+I use `sqlite` for all development in this fashion (for as long as I can get away with it!), as it lets me easily have my "state" synced to the dev environment.
 
 ## What is this thing exactly?
 
