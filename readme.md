@@ -54,6 +54,11 @@ Each Fly.io organization is billed separately.
 Head to a code base and run initialize your project.
 
 ```bash
+# We need to be able to communicate to Fly's API
+# Run this in another terminal, as it's a long-running process
+# It's only needed for the init step
+fly machine api-proxy
+
 # Probably a Laravel project
 cd ~/Code/some-laravel-project
 vessel init
@@ -145,6 +150,24 @@ This means you won't be charged for usage when environments are not in use. Howe
 is put back into place (for now!).
 
 I use `sqlite` for all development in this fashion (for as long as I can get away with it!), as it lets me easily have my "state" synced to the dev environment.
+
+## Making API Calls to Fly.io
+
+During the `init` step, we used `fly machine api-proxy`. This proxies requests from `localhost:4280` to `_api.internal:4280`.
+This `_api.internal` address is actually a private network address that works from within Fly.io's private networks.
+
+The other way to talk to Fly.io's Machines API is to log into your organizations private network via VPN.
+Instructions on setting up [Fly.io's Private Networt VPN are found here](https://fly.io/docs/reference/private-networking/#private-network-vpn).
+
+If you use that method instead, you can:
+
+1. Talk to your VM's directly via `*.internal` hostnames
+2. Use `vessel` by setting the `FLY_HOST` environment variable
+
+```bash
+ export FLY_HOST="_api.internal"
+ vessel init
+```
 
 ## What is this thing exactly?
 
