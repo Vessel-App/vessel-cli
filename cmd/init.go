@@ -182,7 +182,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	w := wow.New(os.Stdout, spin.Get(spin.Dots), " Environment registered, waiting for it to become available")
+	w := wow.New(os.Stdout, spin.Get(spin.Dots), " Environment registered, waiting for it to start")
 	w.Start()
 
 	err = fly.WaitForMachine(auth.Token, appName, env.FlyMachine)
@@ -193,7 +193,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	w.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Environment ready!")
+	w.PersistWith(spin.Spinner{Frames: []string{"\033[1;32m\xE2\x9C\x94\033[0m"}}, " Environment ready!")
 
 	// Ask if we can add to ~/.ssh/config (if alias is not present)
 	canAddSSHAlias := promptui.Prompt{
@@ -276,10 +276,10 @@ forwarding:
 		os.Exit(1)
 	}
 
-	w2.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Mutagen is ready")
+	w2.PersistWith(spin.Spinner{Frames: []string{"\033[1;32m\xE2\x9C\x94\033[0m"}}, " Mutagen is ready")
 
 	// Wait for SSH to become available
-	w3 := wow.New(os.Stdout, spin.Get(spin.Dots), " Waiting for environment to become available")
+	w3 := wow.New(os.Stdout, spin.Get(spin.Dots), " Waiting for environment to become reachable")
 	w3.Start()
 
 	cfg, err := config.RetrieveProjectConfig(ConfigPath)
@@ -314,7 +314,7 @@ forwarding:
 		os.Exit(1)
 	}
 
-	w3.PersistWith(spin.Spinner{Frames: []string{"👍"}}, " Environment is reachable")
+	w3.PersistWith(spin.Spinner{Frames: []string{"\033[1;32m\xE2\x9C\x94\033[0m"}}, " Environment is reachable")
 
 	fmt.Println("You're good to go! Run `vessel start` to begin developing!")
 }
