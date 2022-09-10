@@ -8,6 +8,7 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"os"
+	"os/signal"
 	"strings"
 )
 
@@ -18,8 +19,11 @@ var startCmd = &cobra.Command{
 	Run:   runStartCommand,
 }
 
+var detach = false
+
 func init() {
 	startCmd.Flags().StringVarP(&ConfigPath, "config-file", "c", "vessel.yml", "Configuration file to read from")
+	startCmd.Flags().BoolVarP(&detach, "detach", "d", false, "Run in the background. Run `vessel stop` to stop the development session.")
 }
 
 // runStartCommand starts Mutagen sync and forwarding sessions based on
@@ -69,4 +73,40 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 	}
 
 	fmt.Println("Started development session")
+
+	// If -d, --detach is used, we end here
+	if detach {
+		return
+	}
+
+	fmt.Println("Use crtl+c to stop the session")
+
+	// Else we treat the command as long-running. We listen of os.Interrupt or os.Kill signals
+	// (which work on Windows/Linux as per https://stackoverflow.com/a/35683558/1412984) and clean up
+	// if those signals are received
+	sigc := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sigc, os.Interrupt, os.Kill)
+
+	go func() {
+		_ = <-sigc
+
+		fmt.Println("\nStopping development session")
+
+		// stop syncing
+		errSync := mutagen.StopSync(name)
+
+		// stop forwarding
+		errForward := mutagen.StopForward(name)
+
+		if errSync != nil || errForward != nil {
+			fmt.Println("Error disconnecting from development server")
+			os.Exit(1)
+		}
+
+		done <- true
+	}()
+
+	// Pause until user decides we are done
+	<-done
 }
