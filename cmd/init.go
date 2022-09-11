@@ -58,6 +58,18 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	// Ensure we can connect to Fly's API
+	if fly.ShouldStartFlyMachineApiProxy() {
+		_, err = fly.FindFlyctlCommandPath()
+
+		if err != nil {
+			logger.GetLogger().Error("command", "init", "msg", "could not find flyctl command", "error", err)
+			PrintIfVerbose(Verbose, err, "You need flyctl installed to make API calls to Fly.io")
+
+			os.Exit(1)
+		}
+	}
+
 	// Get/generate application name
 	dir, err := os.Getwd()
 
