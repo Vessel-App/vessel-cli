@@ -40,14 +40,15 @@ func init() {
 // runInitCommand will guide users through setting up a new development environment.
 // It performs the following actions:
 //  1. Retrieves vessel configuration
-//  2. Helps create an environment name
-//  3. Prompts for dev env type (PHP, etc)
-//  4. Generates env files (SSH keys, etc)
-//  5. Gets user's nearest region
-//  6. Creates the dev environment
-//  7. Generates project and SSH configuration
-//  8. Downloads Mutagen (if needed)
-//  9. Waits for dev env to be available
+//  2. Starts `fly machine api-proxy` if needed
+//  3. Helps create an environment name
+//  4. Prompts for dev env type (PHP, etc)
+//  5. Generates env files (SSH keys, etc)
+//  6. Gets user's nearest region
+//  7. Creates the dev environment
+//  8. Generates project and SSH configuration
+//  9. Downloads Mutagen (if needed)
+//  10. Waits for dev env to be available
 func runInitCommand(cmd *cobra.Command, args []string) {
 	auth, err := config.RetrieveVesselConfig()
 
@@ -56,6 +57,29 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		PrintIfVerbose(Verbose, err, "init error, please make sure to run `vessel auth` first")
 
 		os.Exit(1)
+	}
+
+	// Ensure we can connect to Fly's API
+	if fly.ShouldStartFlyMachineApiProxy() {
+		flyctl, err := fly.FindFlyctlCommandPath()
+
+		if err != nil {
+			logger.GetLogger().Error("command", "init", "msg", "could not find flyctl command", "error", err)
+			PrintIfVerbose(Verbose, err, "You need flyctl installed to make API calls to Fly.io")
+
+			os.Exit(1)
+		}
+
+		stopFlyctl, err := fly.StartMachineProxy(flyctl)
+
+		if err != nil {
+			logger.GetLogger().Error("command", "init", "msg", "could not run `flyctl machine api-proxy` command", "error", err)
+			PrintIfVerbose(Verbose, err, "Could not make API calls to Fly.io via api-proxy")
+
+			os.Exit(1)
+		}
+
+		defer stopFlyctl()
 	}
 
 	// Get/generate application name
