@@ -5,6 +5,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"runtime"
 )
 
 // ShouldStartFlyMachineApiProxy will attempt to run the `fly machine api-proxy` command
@@ -34,8 +35,8 @@ func ShouldStartFlyMachineApiProxy() bool {
 	return false
 }
 
-// FindFlyctlCommandPath determines if Flyctl is installed
-// in the user's PATH
+// FindFlyctlCommandPath determines if Flyctl is
+// installed within the user's PATH
 func FindFlyctlCommandPath() (string, error) {
 	path, err := exec.LookPath("flyctl")
 
@@ -46,20 +47,26 @@ func FindFlyctlCommandPath() (string, error) {
 	return path, nil
 }
 
-// TODO: Need to start this in the background and stop it later
-//       Run it in a goroutine and have a function to stop it (how to stop it?)
-func StartMachineProxy() error {
-	proc := &exec.Cmd{
-		Path: "flyctl",
+// StartMachineProxy starts the `fly machine api-proxy` command
+// and returns a function that can be used to stop it
+func StartMachineProxy(exe string) (func() error, error) {
+	cmd := &exec.Cmd{
+		Path: exe,
 		Args: []string{
-			"fyctl",
+			exe,
 			"machine",
 			"api-proxy",
 		},
 	}
-	return nil
-}
 
-func StopMachineProxy() error {
-	return nil
+	if err := cmd.Start(); err != nil {
+		return nil, fmt.Errorf("could not start machine api-proxy: %w", err)
+	}
+
+	return func() error {
+		if runtime.GOOS == "windows" {
+			return cmd.Process.Kill()
+		}
+		return cmd.Process.Signal(os.Interrupt)
+	}, nil
 }
