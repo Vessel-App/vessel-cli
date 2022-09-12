@@ -59,6 +59,11 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
+	stopFlyctl := func() {
+		// Does nothing, but we want it to exist so we can call it later
+		// even if we fly.ShouldStartFlyMachineApiProxy() == false
+	}
+
 	// Ensure we can connect to Fly's API
 	if fly.ShouldStartFlyMachineApiProxy() {
 		flyctl, err := fly.FindFlyctlCommandPath()
@@ -99,6 +104,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		// No logging, user likely just bailed out
 		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure asking app name", "error", err)
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -125,6 +131,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting Docker image", "error", err)
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -134,7 +141,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not create vessel storage directory", "error", err, "dir", vesselAppDir)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -144,7 +151,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not generate SSH keys", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -152,7 +159,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err = ioutil.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH private key", "error", err, "file", privateKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -160,7 +167,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err = ioutil.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH public key", "error", err, "file", publicKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -188,6 +195,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		if err != nil {
 			// User likely bailed out
 			logger.GetLogger().Debug("cmd", "init", "msg", "prompt ui failure selecting region", "error", err)
+			stopFlyctl()
 			os.Exit(1)
 		}
 
@@ -202,7 +210,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not create dev environment", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -213,7 +221,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	if err != nil {
 		logger.GetLogger().Debug("cmd", "init", "msg", "could not get dev environment status", "error", err)
 		PrintIfVerbose(Verbose, err, "error creating dev environment")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -248,7 +256,7 @@ Host vessel-%s
 			if err = util.WriteToSshConfig(sshConfig); err != nil {
 				logger.GetLogger().Error("command", "init", "msg", "could not write to SSH config to ~/.ssh/config", "error", err)
 				PrintIfVerbose(Verbose, err, "error initializing app")
-
+				stopFlyctl()
 				os.Exit(1)
 			}
 		} else {
@@ -274,7 +282,7 @@ forwarding:
 	if err = os.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -287,7 +295,7 @@ forwarding:
 	if err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not create ~/.vessel/bin directory", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -296,7 +304,7 @@ forwarding:
 	if err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not install mutagen to ~/.vessel/bin/mutagen", "error", err)
 		PrintIfVerbose(Verbose, err, "error initializing app")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -311,7 +319,7 @@ forwarding:
 	if err != nil {
 		logger.GetLogger().Error("command", "init", "error", err)
 		PrintIfVerbose(Verbose, err, "could not read configuration")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
@@ -334,7 +342,7 @@ forwarding:
 	if !success {
 		logger.GetLogger().Error("command", "init", "error", err)
 		PrintIfVerbose(Verbose, err, "could not connect to dev environment")
-
+		stopFlyctl()
 		os.Exit(1)
 	}
 
