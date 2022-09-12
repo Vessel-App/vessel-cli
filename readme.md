@@ -5,7 +5,7 @@ Remote dev environments that feel local. Powered by [Fly.io](https://fly.io).
 
 ## What?
 
-Installing tons of development stuff onto laptop sucks. Let's not but say we did.
+Installing tons of development stuff onto your workstation sucks. Let's not but say we did.
 
 This project:
 
@@ -116,6 +116,18 @@ vessel ssh
 # This will match a host set in ~/.ssh/config
 ssh vessel-<my-project-name> # e.g. `ssh vessel-my-app`
 ```
+
+## Custom Dev Environments
+
+The `vessel init` command asks what Docker base image you want to use. Fly.io takes a Docker image and transforms it into a real VM.
+
+Vessel provides a few [base images for PHP](https://github.com/Vessel-App/vessel-run-php), but you are free to create your own by extending the [`vesselapp/base:latest`](https://github.com/Vessel-App/vessel-run) base image (which is an Ubuntu 20:04 image).
+
+For now, you can create a container image and publish it to [Docker Hub](https://hub.docker.com/) as a public image.
+
+Then, during the `vessel init` steps, you can choose **Other** for the Docker image and define your custom image e.g. `some-username/some-image:tag`.
+
+Private image support should be possible to support. See [#11](https://github.com/Vessel-App/vessel-cli/issues/11).
 
 ## Global Configuration
 
