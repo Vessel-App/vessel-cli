@@ -54,11 +54,6 @@ Each Fly.io organization is billed separately.
 Head to a code base and run initialize your project.
 
 ```bash
-# We need to be able to communicate to Fly's API
-# Run this in another terminal, as it's a long-running process
-# It's only needed for the init step
-fly machine api-proxy
-
 # Probably a Laravel project
 cd ~/Code/some-laravel-project
 vessel init
@@ -66,11 +61,14 @@ vessel init
 
 ### 🔁 Usage
 
-Once that's finished, run the `start` command to enable file syncing / port forwarding
+Once that's finished, run the `start` command to enable file syncing / port forwarding.
 
 ```bash
 # Start syncing/port forwarding
 vessel start
+
+# `start` is a long-running command. You can run it in the background if you want:
+vessel start -d
 
 # Run some commands to get dependencies in your server
 ## (Dependencies aren't synced)
@@ -81,15 +79,13 @@ vessel -- "npm install && npm run build"
 # Open http://localhost:8000 in your browser
 vessel open
 
-# When you're done:
+# Use this when syncing in the background:
 vessel stop
 ```
 
 ## Project Configuration
 
-Your project will contain a `vesssel.yml` file. You can customize this to forward additional ports.
-
-By default, it will forward localhost port `8000` to the development environment's port `80`.
+Your project will contain a `vesssel.yml` file. You can customize configuration there!
 
 ## SSH and Commands
 
@@ -110,7 +106,7 @@ errors about the `~/app` working directory not existing.
 ### SSH
 
 This project configures an easy way to SSH into the dev environment. 
-After you run `vessel init`, check your `~/.ssh/config` file to see a new alias created there. You should be able to SSH to the server without the `vessel` command:
+After you run `vessel init`, check your `~/.ssh/config` file to see a new entry created there. You should be able to SSH to the server without the `vessel` command:
 
 ```bash
 # SSH via vessel
@@ -118,7 +114,7 @@ vessel ssh
 
 # SSH outside of Vessel
 # This will match a host set in ~/.ssh/config
-ssh vessel-<my-project-name>
+ssh vessel-<my-project-name> # e.g. `ssh vessel-my-app`
 ```
 
 ## Global Configuration
@@ -131,21 +127,21 @@ You'll find global configuration and a debug log file in `~/.vessel`:
 
 ## Debugging
 
-Use `LOG_LEVEL=debug vessel ...` to get a bit more information output to your `~/.vessel/debug.log` file.
-
 Try adding the `-v` flag to any `vessel` command to get complete errors output directly to your console, e.g. `vessel -v init`.
 
-## I'm a Windows user
+Additionally, use `LOG_LEVEL=debug vessel ...` to get a bit more information output to your `~/.vessel/debug.log` file.
+
+## Windows users
 
 I haven't had a chance to test this on Windows.
 
-Theoretically I've made the code work for some subset of Windows users (based on [Mutagen's requirements](https://mutagen.io/documentation/transports/ssh#windows)).
+Theoretically I've made the code work for Windows, but there's testing and setup to be done (based on [Mutagen's requirements](https://mutagen.io/documentation/transports/ssh#windows)).
 
 ## Ephemeral Environments
 
-The environments will shut down after 5 minutes of inactivity. In activity means no active SSH connections (file syncing via `vessel start` counts as an active SSH session).
+The environments will shut down after 5 minutes of inactivity. An environment is "inactive" when there are no active SSH connections (file syncing via `vessel start` counts as an active SSH session).
 
-This means you won't be charged for usage when environments are not in use. However, the environments are ephemeral. When you start an environment back up,
+The good news is that you won't be charged for usage when environments are not in use. However, the environments are ephemeral. When you start an environment back up,
 **it's as if you're starting from a blank slate**. Your files will get re-synced when you run `vessel start` next, but you'll need to ensure any data you need
 is put back into place (for now!).
 
@@ -153,7 +149,7 @@ I use `sqlite` for all development in this fashion (for as long as I can get awa
 
 ## Making API Calls to Fly.io
 
-During the `init` step, we used `fly machine api-proxy`. This proxies requests from `localhost:4280` to `_api.internal:4280`.
+During the `init` step, we run `flyctl machine api-proxy` in the background. This proxies requests from `localhost:4280` to `_api.internal:4280`.
 This `_api.internal` address is actually a private network address that works from within Fly.io's private networks.
 
 The other way to talk to Fly.io's Machines API is to log into your organizations private network via VPN.
@@ -169,7 +165,7 @@ If you use that method instead, you can:
  vessel init
 ```
 
-## What is this thing exactly?
+## Why Vessel?
 
 This is the result of some fun I had using Fly's Machines API to make remote development environment.
 
