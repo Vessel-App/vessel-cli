@@ -83,10 +83,6 @@ vessel open
 vessel stop
 ```
 
-## Project Configuration
-
-Your project will contain a `vesssel.yml` file. You can customize configuration there!
-
 ## SSH and Commands
 
 You can run one-off commands and SSH into your environments.
@@ -128,6 +124,10 @@ For now, you can create a container image and publish it to [Docker Hub](https:/
 Then, during the `vessel init` steps, you can choose **Other** for the Docker image and define your custom image e.g. `some-username/some-image:tag`.
 
 Private image support should be possible to support. See [#11](https://github.com/Vessel-App/vessel-cli/issues/11).
+
+## Project Configuration
+
+Your project will contain a `vesssel.yml` file. You can customize configuration there! More on this coming up as features are added.
 
 ## Global Configuration
 
