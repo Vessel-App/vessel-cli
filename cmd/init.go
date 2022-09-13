@@ -17,6 +17,7 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/util"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -139,7 +140,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Create ~/.vessel/<app-name>
+	// Create ~/.vessel/envs/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
 
 	if err != nil {
@@ -268,6 +269,15 @@ Host vessel-%s
 		}
 	}
 
+	// TODO: Abstract so selected image has meta data
+	//       such as ignores, forwards, startup commands
+	var ignores string
+	if strings.Contains(envDockerImage, "php") {
+		ignores = `ignore:
+  - vendor
+  - node_modules`
+	}
+
 	// Generate project configuration file
 	yaml := fmt.Sprintf(`name: %s
 
@@ -281,7 +291,9 @@ remote:
 
 forwarding:
   - 8000:80
-`, appName, env.FlyIp, privateKeyPath, appName)
+
+%s
+`, appName, env.FlyIp, privateKeyPath, appName, ignores)
 
 	if err = os.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)

@@ -16,6 +16,7 @@ type EnvironmentConfig struct {
 	Image      string       `yaml:"image"`
 	Remote     RemoteConfig `yaml:"remote"`
 	Forwarding []string     `yaml:"forwarding"`
+	Ignore     []string     `yaml:"ignore"`
 }
 
 type RemoteConfig struct {

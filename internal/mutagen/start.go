@@ -7,7 +7,7 @@ import (
 )
 
 func StartSession(name, localDir string, cfg *config.EnvironmentConfig) error {
-	_, err := Sync(name, cfg.Remote.Alias, localDir, cfg.Remote.RemotePath)
+	_, err := Sync(name, cfg.Remote.Alias, localDir, cfg.Remote.RemotePath, cfg.Ignore)
 
 	if err != nil {
 		return fmt.Errorf("error starting syncing: %w", err)
