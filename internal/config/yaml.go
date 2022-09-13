@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v3"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 )
 
@@ -12,7 +12,7 @@ import (
 
 // RetrieveProjectConfig will find and parse a vessel.yml file for a given project
 func RetrieveProjectConfig(path string) (*EnvironmentConfig, error) {
-	file, err := ioutil.ReadFile(path)
+	file, err := os.ReadFile(path)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not read yaml file '%s': %w", path, err)
@@ -43,7 +43,7 @@ func RetrieveVesselConfig() (*AuthConfig, error) {
 	}
 
 	configPath := filepath.ToSlash(home + "/.vessel/config.yml")
-	file, err := ioutil.ReadFile(configPath)
+	file, err := os.ReadFile(configPath)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not read yaml file '%s': %w", configPath, err)
@@ -68,7 +68,7 @@ func RetrieveFlyConfig() (*FlyConfig, error) {
 	}
 
 	configPath := filepath.ToSlash(home + "/.fly/config.yml")
-	file, err := ioutil.ReadFile(configPath)
+	file, err := os.ReadFile(configPath)
 
 	if err != nil {
 		return nil, fmt.Errorf("could not read yaml file '%s': %w", configPath, err)

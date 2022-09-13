@@ -7,7 +7,6 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/config"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/terminal"
-	"io/ioutil"
 	"net"
 	"os"
 	"strconv"
@@ -39,7 +38,7 @@ func (c *Connection) clientConfig() (*ssh.ClientConfig, error) {
 		sshKey = c.config.IdentityFile
 	}
 
-	key, err := ioutil.ReadFile(sshKey)
+	key, err := os.ReadFile(sshKey)
 	if err != nil {
 		return nil, fmt.Errorf("unable to read private key: %w", err)
 	}

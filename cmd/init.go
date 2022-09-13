@@ -15,9 +15,9 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"github.com/vessel-app/vessel-cli/internal/remote"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -140,7 +140,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	// Create ~/.vessel/<app-name>
+	// Create ~/.vessel/envs/<app-name>
 	vesselAppDir, err := util.MakeAppDir(appName)
 
 	if err != nil {
@@ -161,7 +161,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	privateKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519")
-	if err = ioutil.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
+	if err = os.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH private key", "error", err, "file", privateKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 		stopFlyctl()
@@ -169,7 +169,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	publicKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519.pub")
-	if err = ioutil.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
+	if err = os.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH public key", "error", err, "file", publicKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 		stopFlyctl()
@@ -269,6 +269,15 @@ Host vessel-%s
 		}
 	}
 
+	// TODO: Abstract so selected image has meta data
+	//       such as ignores, forwards, startup commands
+	var ignores string
+	if strings.Contains(envDockerImage, "php") {
+		ignores = `ignore:
+  - vendor
+  - node_modules`
+	}
+
 	// Generate project configuration file
 	yaml := fmt.Sprintf(`name: %s
 
@@ -282,7 +291,9 @@ remote:
 
 forwarding:
   - 8000:80
-`, appName, env.FlyIp, privateKeyPath, appName)
+
+%s
+`, appName, env.FlyIp, privateKeyPath, appName, ignores)
 
 	if err = os.WriteFile("vessel.yml", []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not write yaml file to current directory", "error", err)

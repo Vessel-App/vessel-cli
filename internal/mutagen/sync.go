@@ -10,7 +10,7 @@ import (
 
 // Sync uses Mutagen to start a sync with the given SSH and file path information
 // TODO: We assume ssh alias defined in ~/.ssh/config is the only way to go
-func Sync(name, alias, local_path, remote_path string) (string, error) {
+func Sync(name, alias, local_path, remote_path string, ignores []string) (string, error) {
 	exe, err := GetMutagenCommandPath()
 
 	if err != nil {
@@ -30,18 +30,23 @@ func Sync(name, alias, local_path, remote_path string) (string, error) {
 		}
 	}
 
+	args := []string{
+		exe,
+		"sync", "create",
+		"--ignore-vcs",
+		"--name", name,
+		"--sync-mode", "two-way-resolved",
+		local_path, alias + ":" + remote_path,
+	}
+
+	// Add ignorable files/dirs based on config
+	for _, v := range ignores {
+		args = append(args, "-i", v)
+	}
+
 	proc := &exec.Cmd{
 		Path: exe,
-		Args: []string{
-			exe,
-			"sync", "create",
-			"--ignore-vcs",
-			"-i", "node_modules",
-			"-i", "vendor",
-			"--name", name,
-			"--sync-mode", "two-way-resolved",
-			local_path, alias + ":" + remote_path,
-		},
+		Args: args,
 	}
 
 	logger.GetLogger().Debug("sync_command", proc.String())

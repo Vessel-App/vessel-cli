@@ -8,7 +8,6 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/fly"
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 )
@@ -89,7 +88,7 @@ org: %s
 `, AuthToken, SelectedOrg.Name, SelectedOrg.Slug)
 
 	configPath := filepath.ToSlash(vesselDir + "/config.yml")
-	if err = ioutil.WriteFile(configPath, []byte(yaml), 0755); err != nil {
+	if err = os.WriteFile(configPath, []byte(yaml), 0755); err != nil {
 		logger.GetLogger().Error("command", "auth", "msg", "could not write vessel config file", "error", err)
 		PrintIfVerbose(Verbose, err, "could not set auth token")
 

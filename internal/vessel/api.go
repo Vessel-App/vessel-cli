@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/vessel-app/vessel-cli/internal/logger"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -112,7 +112,7 @@ func CreateEnvironment(team, name, publicKey, region, token string) (*Environmen
 	defer r.Body.Close()
 
 	if r.StatusCode > 299 {
-		b, _ := ioutil.ReadAll(r.Body)
+		b, _ := io.ReadAll(r.Body)
 		logger.GetLogger().Debug("caller", "api::CreateEnvironment", "msg", "http request error", "status", r.StatusCode, "body", string(b))
 		return nil, fmt.Errorf("invalid create environment request: %w", err)
 	}
