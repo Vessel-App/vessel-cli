@@ -59,8 +59,9 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	stopFlyctl := func() {
-		// Does nothing, but we want it to exist so we can call it later
+	stopFlyctl := func() error {
+		return nil
+		// Does nothing, but we want it to exist, so we can call it later
 		// even if we fly.ShouldStartFlyMachineApiProxy() == false
 	}
 
@@ -75,9 +76,13 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 			os.Exit(1)
 		}
 
-		stopFlyctl, err := fly.StartMachineProxy(flyctl)
+		// Create this var, allowing us to use = instead of := in assignment below it
+		// which ensures we are actually re-assigning the stopFlyctl variable
+		var proxyErr error
+		stopFlyctl, proxyErr = fly.StartMachineProxy(flyctl)
+		time.Sleep(time.Second) // Give the proxy time to boot up
 
-		if err != nil {
+		if proxyErr != nil {
 			logger.GetLogger().Error("command", "init", "msg", "could not run `flyctl machine api-proxy` command", "error", err)
 			PrintIfVerbose(Verbose, err, "Could not make API calls to Fly.io via api-proxy")
 
