@@ -53,8 +53,6 @@ func DoRequest(token string, r FlyRequest) ([]byte, error) {
 		result, httpErr = client.Do(req)
 
 		if httpErr != nil {
-			result.Body.Close()
-
 			if os.IsTimeout(httpErr) {
 				// re-attempt
 				attempts++
