@@ -9,7 +9,6 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"os"
 	"os/signal"
-	"strings"
 )
 
 var startCmd = &cobra.Command{
@@ -41,35 +40,22 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 	// Get mutagen session name
 	name := slug.Make("vessel-" + cfg.Name)
 
+	// Attempt to stop any currently running session to prevent duplicates
+	// Note that we ignore errors
+	mutagen.StopSession(name)
+
 	// todo: We assume local path is "."
-	_, err = mutagen.Sync(name, cfg.Remote.Alias, ".", cfg.Remote.RemotePath)
+	err = mutagen.StartSession(name, ".", cfg)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "start", "msg", "error starting syncing session", "error", err)
-		PrintIfVerbose(Verbose, err, "error starting syncing session")
+		PrintIfVerbose(Verbose, err, "error starting development session, attempting to cleanup session")
+
+		// Cleanup any syncing or forwarding started
+		// Note that we ignore errors
+		mutagen.StopSession(name)
 
 		os.Exit(1)
-	}
-
-	// Forward multiple ports
-	for k, p := range cfg.Forwarding {
-		ports := strings.Split(p, ":")
-
-		if len(ports) != 2 {
-			logger.GetLogger().Error("command", "start", "msg", "invalid port forwarding configuration", "error", fmt.Errorf("port forwarding configuration must define both ports to forward separated by a colon, e.g. 8000:8000"))
-			PrintIfVerbose(Verbose, err, "error starting syncing session")
-
-			os.Exit(1)
-		}
-
-		_, err = mutagen.Forward(fmt.Sprintf("%s-%d", name, k), "tcp:127.0.0.1:"+ports[0], cfg.Remote.Alias, "tcp:127.0.0.1:"+ports[1])
-
-		if err != nil {
-			logger.GetLogger().Error("command", "start", "msg", "error starting forwarding session", "error", err)
-			PrintIfVerbose(Verbose, err, "error starting forwarding session")
-
-			os.Exit(1)
-		}
 	}
 
 	fmt.Println("Started development session")
@@ -93,14 +79,10 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 
 		fmt.Println("\nStopping development session")
 
-		// stop syncing
-		errSync := mutagen.StopSync(name)
+		err = mutagen.StopSession(name)
 
-		// stop forwarding
-		errForward := mutagen.StopForward(name)
-
-		if errSync != nil || errForward != nil {
-			fmt.Println("Error disconnecting from development server")
+		if err != nil {
+			fmt.Println("error stopping development session")
 			os.Exit(1)
 		}
 

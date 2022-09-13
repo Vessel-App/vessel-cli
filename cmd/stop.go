@@ -5,6 +5,7 @@ import (
 	"github.com/gosimple/slug"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"os"
 )
@@ -26,7 +27,9 @@ func runStopCommand(cmd *cobra.Command, args []string) {
 	cfg, err := config.RetrieveProjectConfig(ConfigPath)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.GetLogger().Error("command", "start", "msg", "error stopping development session", "error", err)
+		PrintIfVerbose(Verbose, err, "error stopping development session")
+
 		os.Exit(1)
 	}
 
@@ -34,14 +37,12 @@ func runStopCommand(cmd *cobra.Command, args []string) {
 	// Get mutagen session name
 	name := slug.Make("vessel-" + cfg.Name)
 
-	// stop syncing
-	errSync := mutagen.StopSync(name)
+	err = mutagen.StopSession(name)
 
-	// stop forwarding
-	errForward := mutagen.StopForward(name)
+	if err != nil {
+		logger.GetLogger().Error("command", "start", "msg", "error stopping development session", "error", err)
+		PrintIfVerbose(Verbose, err, "error stopping development session")
 
-	if errSync != nil || errForward != nil {
-		fmt.Println("Error disconnecting from development server")
 		os.Exit(1)
 	}
 
