@@ -2,6 +2,7 @@ package fly
 
 import (
 	"fmt"
+	"github.com/vessel-app/vessel-cli/internal/logger"
 	"io"
 	"net/http"
 	"os"
@@ -40,13 +41,32 @@ func DoRequest(token string, r FlyRequest) ([]byte, error) {
 	}
 
 	client := &http.Client{
-		Timeout: time.Second * 6,
+		Timeout: time.Second * 3,
 	}
 
-	result, err := client.Do(req)
+	attempts := 1
+	maxAttempts := 5
+	var result *http.Response
+	var httpErr error
+	for attempts <= maxAttempts {
+		logger.GetLogger().Debug("caller", "fly.http", "msg", "making http request", "attempt", attempts, "url", req.URL)
+		result, httpErr = client.Do(req)
 
-	if err != nil {
-		return nil, fmt.Errorf("http client error: %w", err)
+		if httpErr != nil {
+			result.Body.Close()
+
+			if os.IsTimeout(httpErr) {
+				// re-attempt
+				attempts++
+				continue
+			}
+
+			// If it's not a timeout, break out and return the error
+			return nil, fmt.Errorf("http client error: %w", httpErr)
+		}
+
+		// No error, continue
+		break
 	}
 
 	defer result.Body.Close()
