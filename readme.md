@@ -127,7 +127,19 @@ Private image support should be possible to support. See [#11](https://github.co
 
 ## Project Configuration
 
-Your project will contain a `vesssel.yml` file. You can customize configuration there! More on this coming up as features are added.
+Your project will contain a `vessel.yml` file. You can customize configuration there! 
+
+> More on this coming up as features are added.
+
+By default, Vessel will forward `localhost:8000` to port `80` in the development environment, allowing you to view your application without exposing it to the world.
+
+You can forward additional local ports to other remote ports by adding to the `forwarding` list:
+
+```yaml
+# Add to this list to forward additional ports
+forwarding:
+  - 8000:80
+```
 
 ## Global Configuration
 
