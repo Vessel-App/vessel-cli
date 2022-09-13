@@ -80,7 +80,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 		// which ensures we are actually re-assigning the stopFlyctl variable
 		var proxyErr error
 		stopFlyctl, proxyErr = fly.StartMachineProxy(flyctl)
-		time.Sleep(time.Second) // Give the proxy time to boot up
+		time.Sleep(time.Second * 2) // Give the proxy time to boot up
 
 		if proxyErr != nil {
 			logger.GetLogger().Error("command", "init", "msg", "could not run `flyctl machine api-proxy` command", "error", err)

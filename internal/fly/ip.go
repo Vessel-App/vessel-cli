@@ -45,6 +45,7 @@ func (i *AllocateIpRequest) ToRequest(token string) (*http.Request, error) {
 	req.Header.Set("Authorization", "Bearer "+token)
 	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
 	req.Header.Set("Accept", "application/json")
+	req.Header.Set("fly-force-trace", "vessel") // Help debug api call issues in Fly
 
 	return req, nil
 }
