@@ -15,7 +15,6 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"github.com/vessel-app/vessel-cli/internal/remote"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
@@ -161,7 +160,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	privateKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519")
-	if err = ioutil.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
+	if err = os.WriteFile(privateKeyPath, keys.Private, 0600); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH private key", "error", err, "file", privateKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 		stopFlyctl()
@@ -169,7 +168,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	}
 
 	publicKeyPath := filepath.FromSlash(vesselAppDir + "/id_ed25519.pub")
-	if err = ioutil.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
+	if err = os.WriteFile(publicKeyPath, keys.Public, 0644); err != nil {
 		logger.GetLogger().Error("command", "init", "msg", "could not store generated SSH public key", "error", err, "file", publicKeyPath)
 		PrintIfVerbose(Verbose, err, "error initializing app")
 		stopFlyctl()
