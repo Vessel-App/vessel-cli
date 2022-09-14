@@ -161,7 +161,7 @@ You'll find global configuration and a debug log file in `~/.vessel`:
 
 * `~/.vessel/config.yml` - Configuration including your Fly API token and the Fly organization used
 * `~/.vessel/debug.log` - Logs to help troubleshoot issues
-* `~/.vessel/<your-project>` - A directory containing SSH keys used to access your dev environment
+* `~/.vessel/envs/<your-project>` - A directory containing SSH keys used to access your dev environment
 
 ## Debugging
 
