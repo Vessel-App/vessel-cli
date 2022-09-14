@@ -87,7 +87,7 @@ vessel stop
 
 You can run one-off commands and SSH into your environments.
 
-> **note**
+> **Note**
 > 
 > File syncing (and port forwarding) is done via [mutagen](https://github.com/mutagen-io/mutagen), which also works over SSH. 
 
@@ -151,7 +151,7 @@ ignore:
   - vendor 
 ```
 
-> **note**
+> **Note**
 >
 > Vessel ignores your .git directory in all cases via Mutagen's `--ignore-vcs` flag.
 
