@@ -32,7 +32,7 @@ For Mac/Linux, you can install `vessel` this way:
 
 ```bash
 # 👉 Don't forget to follow instructions to add ~/.vessel/bin to your $PATH
-curl https://vessel.fly.dev/stable/install.sh | sh
+curl https://vessel.fly.dev/install.sh | sh
 ```
 
 ### 2️⃣ Authenticate
@@ -87,6 +87,7 @@ vessel stop
 
 You can run one-off commands and SSH into your environments.
 
+> **note**
 > File syncing (and port forwarding) is done via [mutagen](https://github.com/mutagen-io/mutagen), which also works over SSH. 
 
 ### One-Off Commands
@@ -127,9 +128,7 @@ Private image support should be possible to support. See [#11](https://github.co
 
 ## Project Configuration
 
-Your project will contain a `vessel.yml` file. You can customize configuration there! 
-
-> More on this coming up as features are added.
+Your project will contain a `vessel.yml` file. You can customize configuration there!
 
 By default, Vessel will forward `localhost:8000` to port `80` in the development environment, allowing you to view your application without exposing it to the world.
 
@@ -140,6 +139,19 @@ You can forward additional local ports to other remote ports by adding to the `f
 forwarding:
   - 8000:80
 ```
+
+You can adjust what files/directories get ignored (don't get synced to the remote server) as well:
+
+```yaml
+# Add or remove from this list
+# See https://mutagen.io/documentation/synchronization/ignores for details
+ignore:
+  - node_modules
+  - vendor 
+```
+
+> **Note**
+> Vessel ignores your .git directory in all cases via Mutagen's `--ignore-vcs` flag.
 
 ## Global Configuration
 
