@@ -75,7 +75,17 @@ func MakeEnvStorageDir() (string, error) {
 	return vesselPath, nil
 }
 
-// MakeAppDir creates a ~/.vessel/<app-name> directory
+func GetAppEnvDir(appName string) (string, error) {
+	home, err := homedir.Dir()
+
+	if err != nil {
+		return "", fmt.Errorf("could not find home dir: %w", err)
+	}
+
+	return filepath.FromSlash(fmt.Sprintf("%s/envs/%s", home, appName)), nil
+}
+
+// MakeAppDir creates a ~/.vessel/envs/<app-name> directory
 func MakeAppDir(appName string) (string, error) {
 	_, err := MakeStorageDir()
 	vesselEnvsPath, err := MakeEnvStorageDir()
