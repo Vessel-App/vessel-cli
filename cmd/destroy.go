@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gosimple/slug"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"github.com/vessel-app/vessel-cli/internal/config"
 	"github.com/vessel-app/vessel-cli/internal/fly"
@@ -21,9 +22,11 @@ var destroyCmd = &cobra.Command{
 }
 
 var localFiles bool
+var shutUp bool
 
 func init() {
 	destroyCmd.Flags().BoolVarP(&localFiles, "files-only", "f", false, "Only delete local files, not the virtual machine")
+	destroyCmd.Flags().BoolVarP(&shutUp, "quit", "q", false, "Delete without prompting for approval")
 	destroyCmd.Flags().StringVarP(&ConfigPath, "config-file", "c", "vessel.yml", "Configuration file to read from")
 }
 
@@ -48,6 +51,20 @@ func runDestroyCommand(cmd *cobra.Command, args []string) {
 
 	// Get mutagen session name
 	name := slug.Make("vessel-" + cfg.Name)
+
+	if !shutUp {
+		// Ask if we can delete things
+		canDeleteThings := promptui.Prompt{
+			Label:     "This will permanently delete the dev environment, are you sure?",
+			IsConfirm: true,
+		}
+
+		_, err = canDeleteThings.Run()
+
+		if err != nil {
+			os.Exit(0)
+		}
+	}
 
 	// Attempt to stop any currently running session
 	// Note that we ignore errors
@@ -97,7 +114,7 @@ func runDestroyCommand(cmd *cobra.Command, args []string) {
 			defer stopFlyctl()
 		}
 
-		err = fly.DeleteApp(auth.Token, name)
+		err = fly.DeleteApp(auth.Token, cfg.Name)
 
 		if err != nil {
 			logger.GetLogger().Error("command", "destroy", "msg", "could not destroy Fly app", "error", err)
@@ -118,7 +135,7 @@ func runDestroyCommand(cmd *cobra.Command, args []string) {
 		os.Exit(1)
 	}
 
-	appEnvDir, err := util.GetAppEnvDir(name)
+	appEnvDir, err := util.GetAppEnvDir(cfg.Name)
 
 	if err != nil {
 		logger.GetLogger().Error("command", "destroy", "msg", "could not find dev environment files", "error", err)
