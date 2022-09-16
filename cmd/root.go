@@ -43,6 +43,7 @@ func Execute() {
 		sshCmd,
 		startCmd,
 		stopCmd,
+		destroyCmd,
 	}
 
 	rootCmd.Version = Version
