@@ -163,6 +163,19 @@ You'll find global configuration and a debug log file in `~/.vessel`:
 * `~/.vessel/debug.log` - Logs to help troubleshoot issues
 * `~/.vessel/envs/<your-project>` - A directory containing SSH keys used to access your dev environment
 
+## Destroying an Environment
+
+You can delete any app within Fly.io directly, but Vessel provides a command to cleanup local files and destroy the VM.
+
+```bash
+# Destroy the Fly VM and local files
+vessel destroy
+
+# Destroy only local files, this is handy if
+# you deleted the app in Fly.io's dashboard
+vessel destroy --files-only
+```
+
 ## Debugging
 
 Try adding the `-v` flag to any `vessel` command to get complete errors output directly to your console, e.g. `vessel -v init`.
