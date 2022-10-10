@@ -116,7 +116,7 @@ func runInitCommand(cmd *cobra.Command, args []string) {
 	appName = slug.Make(appName)
 
 	// Get image to use (development environment type)
-	bundledTypes := []string{"vesselapp/php:8.1", "vesselapp/php:8.0"}
+	bundledTypes := []string{"vesselapp/php:8.1", "vesselapp/php:8.0", "vesselapp/php:7.4"}
 	typeIndex := -1
 	var envDockerImage string
 
