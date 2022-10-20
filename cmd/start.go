@@ -65,7 +65,7 @@ func runStartCommand(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	fmt.Println("Use crtl+c to stop the session")
+	fmt.Println("Use ctrl+c to stop the session")
 
 	// Else we treat the command as long-running. We listen of os.Interrupt or os.Kill signals
 	// (which work on Windows/Linux as per https://stackoverflow.com/a/35683558/1412984) and clean up
