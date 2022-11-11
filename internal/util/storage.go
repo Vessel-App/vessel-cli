@@ -87,9 +87,11 @@ func GetAppEnvDir(appName string) (string, error) {
 
 // MakeAppDir creates a ~/.vessel/envs/<app-name> directory
 func MakeAppDir(appName string) (string, error) {
-	_, err := MakeStorageDir()
-	vesselEnvsPath, err := MakeEnvStorageDir()
+	if _, err := MakeStorageDir(); err != nil {
+		return "", fmt.Errorf("could not create vessel storage dir: %w", err)
+	}
 
+	vesselEnvsPath, err := MakeEnvStorageDir()
 	if err != nil {
 		return "", fmt.Errorf("could not create vessel envs dir: %w", err)
 	}
