@@ -25,7 +25,7 @@ func ShouldStartFlyMachineApiProxy() bool {
 		return false
 	}
 
-	return !isProxyRunning(false)
+	return !isProxyRunning()
 }
 
 // FindFlyctlCommandPath determines if Flyctl is
@@ -61,7 +61,7 @@ func StartMachineProxy(exe string) (func() error, error) {
 		return nil, fmt.Errorf("could not start machine api-proxy: %w", err)
 	}
 
-	if !isProxyRunning(true) {
+	if !waitForProxy() {
 		proxyStderrRaw, err := io.ReadAll(stderr)
 		if err != nil {
 			return nil, errors.New("could not start machine api-proxy")
@@ -79,22 +79,24 @@ func StartMachineProxy(exe string) (func() error, error) {
 
 // isProxyRunning determines if the fly machine API proxy is running by
 // attempting to open a TCP connection to the proxy port.
-func isProxyRunning(waitForStartup bool) bool {
-	connectFn := func() bool {
-		c, err := net.Dial("tcp", "127.0.0.1:4280")
-		if err != nil {
-			return false
-		}
-		defer c.Close()
-		return true
+func isProxyRunning() bool {
+	c, err := net.Dial("tcp", "127.0.0.1:4280")
+	if err != nil {
+		return false
 	}
-	ok := connectFn()
-	if ok || !waitForStartup {
-		return ok
+	defer c.Close()
+	return true
+}
+
+// waitForProxy waits up to 2 seconds for a successful connection to the fly
+// machine API proxy to become available.
+func waitForProxy() bool {
+	if isProxyRunning() {
+		return true
 	}
 	for i := 0; i < 10; i++ {
 		time.Sleep(200 * time.Millisecond)
-		if connectFn() {
+		if isProxyRunning() {
 			return true
 		}
 	}
