@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/gosimple/slug"
 	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
@@ -10,8 +12,6 @@ import (
 	"github.com/vessel-app/vessel-cli/internal/logger"
 	"github.com/vessel-app/vessel-cli/internal/mutagen"
 	"github.com/vessel-app/vessel-cli/internal/util"
-	"os"
-	"time"
 )
 
 var destroyCmd = &cobra.Command{
@@ -98,13 +98,7 @@ func runDestroyCommand(cmd *cobra.Command, args []string) {
 				os.Exit(1)
 			}
 
-			// Create this var, allowing us to use = instead of := in assignment below it
-			// which ensures we are actually re-assigning the stopFlyctl variable
-			var proxyErr error
-			stopFlyctl, proxyErr = fly.StartMachineProxy(flyctl)
-			time.Sleep(time.Second * 2) // Give the proxy time to boot up
-
-			if proxyErr != nil {
+			if stopFlyctl, err = fly.StartMachineProxy(flyctl); err != nil {
 				logger.GetLogger().Error("command", "init", "msg", "could not run `flyctl machine api-proxy` command", "error", err)
 				PrintIfVerbose(Verbose, err, "Could not make API calls to Fly.io via api-proxy")
 
