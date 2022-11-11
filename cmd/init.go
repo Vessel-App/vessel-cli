@@ -340,22 +340,7 @@ forwarding:
 	}
 
 	connection := remote.NewConnection(&cfg.Remote)
-
-	// Wait for up to ~30 seconds for SSH to become available
-	// (15 attempts, attempted every 2 seconds)
-	attempts := 0
-	success := false
-	for attempts <= 15 {
-		if err := connection.TestConnection(); err != nil {
-			time.Sleep(time.Second * 2)
-			attempts++
-		} else {
-			success = true
-			break
-		}
-	}
-
-	if !success {
+	if err := waitForConnection(connection); err != nil {
 		logger.GetLogger().Error("command", "init", "error", err)
 		PrintIfVerbose(Verbose, err, "could not connect to dev environment")
 		stopFlyctl()
@@ -365,4 +350,18 @@ forwarding:
 	w3.PersistWith(spin.Spinner{Frames: []string{"\033[1;32m\xE2\x9C\x94\033[0m"}}, " Environment is reachable")
 
 	fmt.Println("You're good to go! Run `vessel start` to begin developing!")
+}
+
+// waitForConnection waits up to ~30 seconds for SSH to become available
+// (15 attempts, attempted every 2 seconds)
+func waitForConnection(connection *remote.Connection) error {
+	var err error
+	for attempts := 0; attempts <= 15; attempts++ {
+		if err = connection.TestConnection(); err != nil {
+			time.Sleep(2 * time.Second)
+		} else {
+			return nil
+		}
+	}
+	return err
 }
