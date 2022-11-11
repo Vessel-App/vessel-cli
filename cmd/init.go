@@ -356,7 +356,7 @@ forwarding:
 // (15 attempts, attempted every 2 seconds)
 func waitForConnection(connection *remote.Connection) error {
 	var err error
-	for attempts := 0; attempts <= 15; attempts++ {
+	for attempts := 0; attempts < 15; attempts++ {
 		if err = connection.TestConnection(); err != nil {
 			time.Sleep(2 * time.Second)
 		} else {
