@@ -1,11 +1,15 @@
 package fly
 
 import (
+	"errors"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"os/exec"
 	"runtime"
+	"strings"
+	"time"
 )
 
 // ShouldStartFlyMachineApiProxy will attempt to run the `fly machine api-proxy` command
@@ -21,18 +25,7 @@ func ShouldStartFlyMachineApiProxy() bool {
 		return false
 	}
 
-	// Test if we can connect to the proxy address
-	conn, err := net.Dial("tcp", "127.0.0.1:4280")
-	if err != nil {
-		// If proxying is not happening unable to connect,
-		// we *should* attempt to start the proxy
-		return true
-	}
-	defer conn.Close()
-
-	// We were able to connect, user likely already has
-	// the machine api-proxy running
-	return false
+	return !isProxyRunning()
 }
 
 // FindFlyctlCommandPath determines if Flyctl is
@@ -59,8 +52,21 @@ func StartMachineProxy(exe string) (func() error, error) {
 		},
 	}
 
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return nil, fmt.Errorf("could not retrieve stderr for machine api-proxy: %w", err)
+	}
+
 	if err := cmd.Start(); err != nil {
 		return nil, fmt.Errorf("could not start machine api-proxy: %w", err)
+	}
+
+	if !waitForProxy() {
+		proxyStderrRaw, err := io.ReadAll(stderr)
+		if err != nil {
+			return nil, errors.New("could not start machine api-proxy")
+		}
+		return nil, fmt.Errorf("could not start machine api-proxy: %s", strings.TrimSpace(string(proxyStderrRaw)))
 	}
 
 	return func() error {
@@ -69,4 +75,31 @@ func StartMachineProxy(exe string) (func() error, error) {
 		}
 		return cmd.Process.Signal(os.Interrupt)
 	}, nil
+}
+
+// isProxyRunning determines if the fly machine API proxy is running by
+// attempting to open a TCP connection to the proxy port.
+func isProxyRunning() bool {
+	c, err := net.Dial("tcp", "127.0.0.1:4280")
+	if err != nil {
+		return false
+	}
+	defer c.Close()
+	return true
+}
+
+// waitForProxy waits up to 2 seconds for a successful connection to the fly
+// machine API proxy to become available.
+func waitForProxy() bool {
+	if isProxyRunning() {
+		return true
+	}
+	for i := 0; i < 10; i++ {
+		time.Sleep(200 * time.Millisecond)
+		if isProxyRunning() {
+			return true
+		}
+	}
+
+	return false
 }
