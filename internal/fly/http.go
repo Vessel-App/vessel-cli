@@ -35,38 +35,14 @@ func init() {
 
 func DoRequest(token string, r FlyRequest) ([]byte, error) {
 	req, err := r.ToRequest(token)
-
 	if err != nil {
 		return nil, fmt.Errorf("could not create request: %w", err)
 	}
 
-	client := &http.Client{
-		Timeout: time.Second * 3,
+	result, err := doRequestWithRetries(req)
+	if err != nil {
+		return nil, err
 	}
-
-	attempts := 1
-	maxAttempts := 5
-	var result *http.Response
-	var httpErr error
-	for attempts <= maxAttempts {
-		logger.GetLogger().Debug("caller", "fly.http", "msg", "making http request", "attempt", attempts, "url", req.URL)
-		result, httpErr = client.Do(req)
-
-		if httpErr != nil {
-			if os.IsTimeout(httpErr) {
-				// re-attempt
-				attempts++
-				continue
-			}
-
-			// If it's not a timeout, break out and return the error
-			return nil, fmt.Errorf("http client error: %w", httpErr)
-		}
-
-		// No error, continue
-		break
-	}
-
 	defer result.Body.Close()
 
 	if result.StatusCode > 299 {
@@ -76,4 +52,29 @@ func DoRequest(token string, r FlyRequest) ([]byte, error) {
 	}
 
 	return io.ReadAll(result.Body)
+}
+
+func doRequestWithRetries(req *http.Request) (*http.Response, error) {
+	client := &http.Client{
+		Timeout: 3 * time.Second,
+	}
+
+	var result *http.Response
+	var err error
+	for attempts := 1; attempts <= 5; attempts++ {
+		logger.GetLogger().Debug("caller", "fly.http", "msg", "making http request", "attempt", attempts, "url", req.URL)
+		result, err = client.Do(req)
+		if err != nil {
+			if os.IsTimeout(err) {
+				continue
+			}
+
+			// If it's not a timeout, break out and return the error
+			return nil, fmt.Errorf("http client error: %w", err)
+		}
+
+		return result, nil
+	}
+
+	return nil, err
 }
